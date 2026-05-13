@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前川隆昭の持ち味発見</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;background:#f8faf9;color:#1a1a1a;min-height:100vh}
+.container{max-width:720px;margin:0 auto;padding:2rem 1.5rem}
+.progress-wrap{margin-bottom:2rem}
+.progress-bar{display:flex;gap:5px;margin-bottom:8px}
+.progress-step{height:3px;flex:1;border-radius:2px;background:#e0e0e0;transition:background 0.4s}
+.progress-step.done{background:#1D9E75}.progress-step.current{background:#5DCAA5}
+.progress-labels{display:flex;gap:5px}
+.progress-label{flex:1;font-size:9px;color:#888;text-align:center;line-height:1.3}
+.progress-label.current{color:#0F6E56;font-weight:600}
+.step{display:none}.step.active{display:block}
+.tag{display:inline-block;font-size:10px;letter-spacing:0.08em;color:#888;text-transform:uppercase;margin-bottom:0.5rem}
+h1{font-size:24px;font-weight:600;color:#0F6E56;margin-bottom:0.5rem;line-height:1.4}
+h2{font-size:20px;font-weight:500;color:#1a1a1a;margin-bottom:0.5rem;line-height:1.4}
+.lead{font-size:14px;color:#555;line-height:1.8;margin-bottom:1.5rem}
+.note{font-size:12px;color:#999;line-height:1.6}
+.hero{border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem 1.25rem 1.25rem 1.5rem;margin-bottom:1.5rem;background:#f5faf8;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:#1D9E75}
+.hero-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:5px}
+.hero-text{font-size:12px;color:#555;line-height:1.7}
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+.step-icon-card{border:1px solid #e0e0e0;border-radius:10px;padding:12px 8px;text-align:center;background:#fff}
+.step-icon-card i{font-size:20px;margin-bottom:5px;display:block}
+.step-icon-name{font-size:11px;font-weight:600;color:#1a1a1a;margin-bottom:2px}
+.step-icon-desc{font-size:10px;color:#888;line-height:1.3}
+.card{border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem;background:#fff}
+.card-title{font-size:12px;font-weight:600;color:#555;letter-spacing:0.04em;padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid #f0f0f0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;color:#555}
+.field input,.field select{border:1px solid #e0e0e0;border-radius:8px;padding:8px 10px;font-size:13px;color:#1a1a1a;background:#fafafa;outline:none;font-family:inherit;width:100%}
+.field input:focus,.field select:focus{border-color:#1D9E75;background:#fff}
+.field input::placeholder{color:#bbb}
+.opt{font-size:10px;color:#999;background:#f5f5f5;border:1px solid #e0e0e0;border-radius:4px;padding:1px 5px;margin-left:4px}
+.sns-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sns-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sns-row input{flex:1;border:1px solid #e0e0e0;border-radius:8px;padding:7px 10px;font-size:12px;color:#1a1a1a;background:#fafafa;outline:none;font-family:inherit}
+.sns-row input:focus{border-color:#1D9E75;background:#fff}
+.period-card{border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:0.75rem;background:#fff}
+.period-header{display:flex;align-items:center;gap:10px;margin-bottom:0.75rem}
+.period-num{width:26px;height:26px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#0F6E56;flex-shrink:0}
+.period-title-input{flex:1;border:none;border-bottom:1px solid #e0e0e0;background:transparent;font-size:13px;font-weight:500;color:#1a1a1a;padding:2px 4px;outline:none;font-family:inherit}
+.period-title-input:focus{border-bottom-color:#1D9E75}
+.slider-row{display:flex;align-items:center;gap:10px;margin-bottom:0.75rem}
+.slider-label{font-size:11px;color:#555;width:52px}
+.slider-row input[type=range]{flex:1;accent-color:#1D9E75}
+.slider-val{font-size:12px;font-weight:600;min-width:40px;text-align:right;color:#1a1a1a}
+textarea{width:100%;border:1px solid #e0e0e0;border-radius:8px;padding:8px 10px;font-size:12px;color:#1a1a1a;background:#fafafa;resize:vertical;min-height:56px;outline:none;font-family:inherit;line-height:1.5}
+textarea:focus{border-color:#1D9E75;background:#fff}
+.skill-section{border:1px solid #e0e0e0;border-radius:12px;padding:0 1.25rem;margin-bottom:0.75rem;background:#fff}
+.skill-section-hd{font-size:11px;font-weight:600;color:#555;padding:10px 0 6px;border-bottom:1px solid #f0f0f0;letter-spacing:0.04em}
+.skill-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f5f5f5}
+.skill-row:last-child{border-bottom:none}
+.skill-info{flex:1}
+.skill-name{font-size:13px;font-weight:500;color:#1a1a1a}
+.skill-desc{font-size:11px;color:#888;margin-top:2px}
+.stars{display:flex;gap:3px}
+.star{font-size:22px;cursor:pointer;color:#ddd;transition:color 0.1s,transform 0.1s;line-height:1;user-select:none}
+.star:hover{transform:scale(1.2)}
+.star.on{color:#EF9F27}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:#1D9E75;color:white;border:none;border-radius:8px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s,transform 0.1s;font-family:inherit}
+.btn-primary:hover{background:#0F6E56}.btn-primary:active{transform:scale(0.98)}
+.btn-secondary{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#555;border:1px solid #ddd;border-radius:8px;padding:11px 18px;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-secondary:hover{background:#f5f5f5}
+.btn-amber{display:inline-flex;align-items:center;gap:6px;background:#BA7517;color:white;border:none;border-radius:8px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-amber:hover{background:#854F0B}
+.btn-green{display:inline-flex;align-items:center;gap:6px;background:#0F6E56;color:white;border:none;border-radius:8px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-green:hover{background:#0a5040}
+.btn-row{display:flex;gap:10px;margin-top:1.5rem;align-items:center;flex-wrap:wrap}
+.loading-box{border:1px solid #e0e0e0;border-radius:12px;padding:2rem;text-align:center;background:#fafafa;margin-bottom:1rem}
+.loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#1D9E75;animation:pulse 1.2s ease-in-out infinite;margin:0 3px}
+.loading-dot:nth-child(2){animation-delay:0.2s}.loading-dot:nth-child(3){animation-delay:0.4s}
+@keyframes pulse{0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
+.fq-card{border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:0.75rem;background:#fff}
+.fq-card:hover{border-color:#5DCAA5}
+.fq-num{font-size:10px;color:#0F6E56;background:#E1F5EE;border-radius:20px;padding:2px 8px;display:inline-block;margin-bottom:8px}
+.fq-question{font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;line-height:1.6}
+.fq-answer-area{margin-top:8px;display:none}
+.fq-answer-area.open{display:block}
+.fq-submit{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#0F6E56;background:#E1F5EE;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit;margin-top:6px}
+.fq-open-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#0F6E56;background:#E1F5EE;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit}
+.ai-response{border:1px solid #e0e0e0;border-radius:8px;padding:1rem;background:#fafafa;font-size:13px;color:#333;line-height:1.7;margin-top:8px;white-space:pre-wrap}
+.divider{height:1px;background:#f0f0f0;margin:1.5rem 0}
+.action-section{border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;background:#fff;margin-top:1rem}
+.action-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:6px}
+.action-desc{font-size:12px;color:#888;line-height:1.6;margin-bottom:12px}
+.error-box{border:1px solid #fca5a5;border-radius:12px;padding:1rem;background:#fef2f2;font-size:13px;color:#dc2626;margin-bottom:1rem;line-height:1.6}
+.saved-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#0F6E56;background:#E1F5EE;border-radius:20px;padding:4px 10px;margin-left:8px}
+canvas{border-radius:8px;border:1px solid #e0e0e0;background:#fafafa;width:100%;display:block;margin-bottom:1.5rem}
+@media(max-width:600px){
+  .steps-grid{grid-template-columns:repeat(2,1fr)}
+  .grid2,.grid3{grid-template-columns:1fr}
+  h1{font-size:20px}
+  .btn-row{flex-direction:column;align-items:stretch}
+  .btn-primary,.btn-secondary,.btn-amber,.btn-green{justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="progress-wrap">
+  <div class="progress-bar">
+    <div class="progress-step current" id="p0"></div>
+    <div class="progress-step" id="p1"></div>
+    <div class="progress-step" id="p2"></div>
+    <div class="progress-step" id="p3"></div>
+    <div class="progress-step" id="p4"></div>
+  </div>
+  <div class="progress-labels">
+    <div class="progress-label current" id="pl0">はじめに</div>
+    <div class="progress-label" id="pl1">プロフィール</div>
+    <div class="progress-label" id="pl2">ライフライン</div>
+    <div class="progress-label" id="pl3">スキル評価</div>
+    <div class="progress-label" id="pl4">結果・深掘り</div>
+  </div>
+</div>
+
+<!-- Step 0 -->
+<div class="step active" id="step-0">
+  <div class="tag">前川隆昭の持ち味発見</div>
+  <h1>前川隆昭の「持ち味」を<br>発見しましょう</h1>
+  <p class="lead">前川さんのライフライン・スキルデータがあらかじめ入力されています。内容を確認・修正してから「AI分析を依頼する」を押してください。</p>
+  <div class="hero">
+    <div class="hero-title">このアプリについて</div>
+    <div class="hero-text">希少性・市場性・再現性の3軸で持ち味を分析し、リスキリングすべき分野を提案します。フォローアップ質問で深掘りし、PDFレポートとして保存できます。</div>
+  </div>
+  <div class="steps-grid">
+    <div class="step-icon-card"><i class="ti ti-user" style="color:#1D9E75"></i><div class="step-icon-name">プロフィール</div><div class="step-icon-desc">入力済み・確認可能</div></div>
+    <div class="step-icon-card"><i class="ti ti-timeline" style="color:#1D9E75"></i><div class="step-icon-name">ライフライン</div><div class="step-icon-desc">7時期入力済み</div></div>
+    <div class="step-icon-card"><i class="ti ti-star" style="color:#EF9F27"></i><div class="step-icon-name">スキル評価</div><div class="step-icon-desc">12項目入力済み</div></div>
+    <div class="step-icon-card"><i class="ti ti-message-circle" style="color:#BA7517"></i><div class="step-icon-name">AI分析・深掘り</div><div class="step-icon-desc">持ち味を発見</div></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="goStep(1)">確認・編集する <i class="ti ti-arrow-right"></i></button>
+    <button class="btn-green" onclick="goStep(4)">そのままAI分析する <i class="ti ti-sparkles"></i></button>
+  </div>
+</div>
+
+<!-- Step 1 -->
+<div class="step" id="step-1">
+  <div class="tag">ステップ 1 / 4</div>
+  <h2>プロフィール</h2>
+  <p class="lead">内容を確認・修正してください。</p>
+  <div class="card">
+    <div class="card-title">基本情報</div>
+    <div class="grid2">
+      <div class="field"><label>お名前</label><input type="text" id="p_name" value="前川 隆昭"></div>
+      <div class="field"><label>年齢</label><input type="number" id="p_age" value="70"></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>性別</label>
+        <select id="p_gender"><option>男性</option><option>女性</option><option>その他</option></select></div>
+      <div class="field"><label>都道府県</label>
+        <select id="p_pref"><option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option><option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option><option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option><option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option><option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option><option>滋賀県</option><option>京都府</option><option>大阪府</option><option selected>兵庫県</option><option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option><option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option><option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option></select></div>
+      <div class="field"><label>職業・役職</label><input type="text" id="p_job" value="研修講師・コンサルタント"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">SNS・Web</div>
+    <div class="sns-row"><div class="sns-icon" style="background:#000;color:#fff"><i class="ti ti-brand-x"></i></div><input type="url" id="sns_x" value="https://x.com/SoftMeister"></div>
+    <div class="sns-row"><div class="sns-icon" style="background:#1877F2;color:#fff"><i class="ti ti-brand-facebook"></i></div><input type="url" id="sns_fb" value="https://www.facebook.com/takaaki.maekawa.7"></div>
+    <div class="sns-row"><div class="sns-icon" style="background:#0A66C2;color:#fff"><i class="ti ti-brand-linkedin"></i></div><input type="url" id="sns_li" placeholder="LinkedIn（任意）"></div>
+    <div class="sns-row"><div class="sns-icon" style="background:#E4405F;color:#fff"><i class="ti ti-brand-instagram"></i></div><input type="url" id="sns_ig" placeholder="Instagram（任意）"></div>
+    <div class="sns-row"><div class="sns-icon" style="background:#1D9E75;color:#fff"><i class="ti ti-world"></i></div><input type="url" id="sns_web" value="https://www.humanfront.jp/"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goStep(0)"><i class="ti ti-arrow-left"></i> 戻る</button>
+    <button class="btn-primary" onclick="goStep(2)">次へ <i class="ti ti-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="step" id="step-2">
+  <div class="tag">ステップ 2 / 4</div>
+  <h2>ライフラインチャート</h2>
+  <p class="lead">各時期の内容を確認・修正してください。</p>
+  <div id="periodsContainer"></div>
+  <button class="btn-secondary" onclick="addPeriod()" style="margin-bottom:1rem;font-size:13px"><i class="ti ti-plus"></i> 時期を追加</button>
+  <canvas id="lifeline" height="80"></canvas>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goStep(1)"><i class="ti ti-arrow-left"></i> 戻る</button>
+    <button class="btn-primary" onclick="goStep(3)">次へ <i class="ti ti-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<div class="step" id="step-3">
+  <div class="tag">ステップ 3 / 4</div>
+  <h2>社会人基礎力 スキル評価</h2>
+  <p class="lead">評価を確認・修正してください。</p>
+  <div id="skillsContainer"></div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goStep(2)"><i class="ti ti-arrow-left"></i> 戻る</button>
+    <button class="btn-primary" onclick="goStep(4)">AI分析を依頼する <i class="ti ti-sparkles"></i></button>
+  </div>
+</div>
+
+<!-- Step 4 -->
+<div class="step" id="step-4">
+  <div class="tag">ステップ 4 / 4 — 結果・深掘り</div>
+  <h2>持ち味分析レポート</h2>
+  <div id="analysisArea">
+    <div class="loading-box">
+      <div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
+      <p style="font-size:13px;color:#888;margin-top:12px">AIが持ち味を分析しています...</p>
+    </div>
+  </div>
+  <div id="followupSection" style="display:none">
+    <div class="divider"></div>
+    <p style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:4px"><i class="ti ti-message-circle"></i> コーチング用フォローアップ質問</p>
+    <p class="note" style="margin-bottom:12px">気になる質問をクリックして回答を入力すると、AIがさらに深掘りします。</p>
+    <div id="fqContainer"></div>
+    <div class="divider"></div>
+    <div class="action-section">
+      <div class="action-title"><i class="ti ti-device-floppy"></i> 入力データを保存する</div>
+      <div class="action-desc">次回アクセス時に変更したデータを引き継げます。</div>
+      <button class="btn-green" onclick="saveData()"><i class="ti ti-device-floppy"></i> データを保存する</button>
+      <span id="saveStatus"></span>
+    </div>
+    <div style="margin-top:1rem"></div>
+    <div class="action-section">
+      <div class="action-title"><i class="ti ti-file-type-pdf"></i> PDFレポートに保存する</div>
+      <div class="action-desc">分析結果・フォローアップQ&Aをまとめてダウンロードできます。</div>
+      <button class="btn-amber" onclick="downloadPdf()"><i class="ti ti-download"></i> PDFに保存する</button>
+    </div>
+  </div>
+  <div class="btn-row" style="margin-top:1.5rem">
+    <button class="btn-secondary" onclick="goStep(0)"><i class="ti ti-refresh"></i> 最初からやり直す</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const SKILLS=[
+  {cat:"前に踏み出す力",name:"主体性",desc:"進んで物事に取り組む"},
+  {cat:"前に踏み出す力",name:"働きかけ力",desc:"他人を巻き込む"},
+  {cat:"前に踏み出す力",name:"実行力",desc:"目的を設定し行動する"},
+  {cat:"考え抜く力",name:"課題発見力",desc:"課題を明らかにする"},
+  {cat:"考え抜く力",name:"計画力",desc:"プロセスを整理する"},
+  {cat:"考え抜く力",name:"創造力",desc:"新しい価値を生み出す"},
+  {cat:"チームで働く力",name:"発信力",desc:"自分の意見を伝える"},
+  {cat:"チームで働く力",name:"傾聴力",desc:"相手の意見を聴く"},
+  {cat:"チームで働く力",name:"柔軟性",desc:"違いを理解し受け入れる"},
+  {cat:"チームで働く力",name:"情況把握力",desc:"関係性を理解する"},
+  {cat:"チームで働く力",name:"規律性",desc:"ルールや約束を守る"},
+  {cat:"チームで働く力",name:"ストレス対応",desc:"発生源に対応する"},
+];
+
+// 前川さんのデフォルトデータ
+const DEFAULT_PERIODS=[
+  {label:"①1981-1992（研究所）",score:75,event:"三菱電機の研究所入社。開発中止、米国出張、製品化断念、本部長表彰、米企業との提携など紆余曲折を経ながらもやりがいをみい出す。結婚、双子誕生。"},
+  {label:"②1992-2002（神戸製作所）",score:20,event:"開発したシステムの製品化のため工場へ異動。パワハラ上司、阪神大震災などで苦労するも、システム出荷。「7つの習慣」に出会う。触発され課長昇進。"},
+  {label:"③2002-2003（米国駐在）",score:70,event:"シリコンバレーに1年半駐在。3人所帯のGM拝命。オープンな雰囲気、会社を越えた技術者の交流など、学びと異文化交流を体験。"},
+  {label:"④2003-2005（本社技術部）",score:30,event:"帰国後、本社へ異動。稲盛経営哲学に触れる。利他の心、全体俯瞰、経営戦略を学ぶ。情報漏洩や赤字で本部分割。東京で単身赴任継続。"},
+  {label:"⑤2005-2011（技術センター）",score:65,event:"生産本部の設計システム技術センターで、全社のS/Wの生産性向上・品質改善を担当。幅広い分野のS/W製品やシステムの改善を支援。"},
+  {label:"⑥2011-2020（人材開発センター）",score:85,event:"人事部・人材開発センターに異動。全社のS/W人材育成を担当。新入社員から管理職まで述べ3000名を育成。「7つの習慣」講師、キャリコン資格取得。"},
+  {label:"⑦2021〜現在（個人事務所）",score:90,event:"65歳で退職後、ヒューマンフロント研究所を開業。企業研修講師、大学講師、地元自治体主催の講座講師など、まだまだ元気！"},
+];
+const DEFAULT_SKILLS={主体性:5,働きかけ力:4,実行力:4,課題発見力:4,計画力:3,創造力:3,発信力:4,傾聴力:2,柔軟性:2,情況把握力:3,規律性:4,ストレス対応:3};
+
+let skillRatings={...DEFAULT_SKILLS};
+let periods=[...DEFAULT_PERIODS.map(p=>({...p}))];
+let currentStep=0;
+let analysisResult='';
+let fqAnswers={};
+
+// ---- データ保存・読み込み ----
+function saveData(){
+  const data={
+    profile:{name:getVal("p_name"),age:getVal("p_age"),gender:getVal("p_gender"),pref:getVal("p_pref"),job:getVal("p_job"),sns_x:getVal("sns_x"),sns_fb:getVal("sns_fb"),sns_li:getVal("sns_li"),sns_ig:getVal("sns_ig"),sns_web:getVal("sns_web")},
+    periods:[...periods],skills:{...skillRatings},savedAt:new Date().toLocaleDateString("ja-JP")
+  };
+  localStorage.setItem("maekawa_mochimi",JSON.stringify(data));
+  const s=document.getElementById("saveStatus");
+  s.innerHTML=`<span class="saved-badge"><i class="ti ti-check"></i> 保存しました（${data.savedAt}）</span>`;
+  setTimeout(()=>s.innerHTML="",4000);
+}
+
+function loadSavedIfExists(){
+  try{
+    const raw=localStorage.getItem("maekawa_mochimi");
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    if(d.periods)periods=[...d.periods];
+    if(d.skills)skillRatings={...d.skills};
+    if(d.profile){
+      const p=d.profile;
+      setTimeout(()=>{
+        setVal("p_name",p.name);setVal("p_age",p.age);setVal("p_gender",p.gender);
+        setVal("p_pref",p.pref);setVal("p_job",p.job);setVal("sns_x",p.sns_x);
+        setVal("sns_fb",p.sns_fb);setVal("sns_li",p.sns_li);setVal("sns_ig",p.sns_ig);setVal("sns_web",p.sns_web);
+      },100);
+    }
+  }catch(e){}
+}
+
+function setVal(id,val){const el=document.getElementById(id);if(el&&val!=null)el.value=val;}
+
+// ---- Periods ----
+function renderPeriods(){
+  const c=document.getElementById("periodsContainer");c.innerHTML="";
+  periods.forEach((p,i)=>{
+    const sl=(p.score>0?"+":"")+p.score;
+    const d=document.createElement("div");d.className="period-card";
+    d.innerHTML=`
+      <div class="period-header">
+        <div class="period-num">${i+1}</div>
+        <input class="period-title-input" value="${p.label}" oninput="periods[${i}].label=this.value;drawLifeline()">
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">幸福度</span>
+        <input type="range" min="-100" max="100" step="1" value="${p.score}" oninput="periods[${i}].score=parseInt(this.value);this.nextElementSibling.textContent=(parseInt(this.value)>0?'+':'')+this.value;drawLifeline()">
+        <span class="slider-val">${sl}</span>
+      </div>
+      <textarea oninput="periods[${i}].event=this.value">${p.event}</textarea>
+      ${periods.length>2?`<div style="text-align:right;margin-top:4px"><button onclick="removePeriod(${i})" style="font-size:11px;color:#999;background:none;border:none;cursor:pointer">削除</button></div>`:""}
+    `;
+    c.appendChild(d);
+  });drawLifeline();
+}
+
+function addPeriod(){periods.push({label:"時期"+(periods.length+1),score:0,event:""});renderPeriods()}
+function removePeriod(i){periods.splice(i,1);renderPeriods()}
+
+function drawLifeline(){
+  const canvas=document.getElementById("lifeline");if(!canvas)return;
+  const dpr=window.devicePixelRatio||1,W=canvas.offsetWidth||680,H=80;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const mid=H/2;
+  ctx.strokeStyle="rgba(0,0,0,0.1)";ctx.lineWidth=0.5;
+  ctx.beginPath();ctx.moveTo(16,mid);ctx.lineTo(W-16,mid);ctx.stroke();
+  if(periods.length<2)return;
+  const step=(W-32)/(periods.length-1);
+  const pts=periods.map((p,i)=>({x:16+i*step,y:mid-(p.score/100)*(mid-8)}));
+  ctx.strokeStyle="#1D9E75";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++){const cpx=pts[i-1].x+(pts[i].x-pts[i-1].x)*0.5;ctx.bezierCurveTo(cpx,pts[i-1].y,cpx,pts[i].y,pts[i].x,pts[i].y)}
+  ctx.stroke();
+  pts.forEach(pt=>{ctx.fillStyle="#1D9E75";ctx.beginPath();ctx.arc(pt.x,pt.y,4,0,Math.PI*2);ctx.fill()});
+}
+
+// ---- Skills ----
+function renderSkills(){
+  const container=document.getElementById("skillsContainer");container.innerHTML="";
+  const cats=[...new Set(SKILLS.map(s=>s.cat))];
+  cats.forEach(cat=>{
+    const sec=document.createElement("div");sec.className="skill-section";
+    sec.innerHTML=`<div class="skill-section-hd">${cat}</div>`;
+    SKILLS.filter(s=>s.cat===cat).forEach(s=>{
+      const key=s.name.replace(/\s/g,"");
+      const row=document.createElement("div");row.className="skill-row";
+      row.innerHTML=`
+        <div class="skill-info"><div class="skill-name">${s.name}</div><div class="skill-desc">${s.desc}</div></div>
+        <div class="stars" id="stars-${key}">
+          ${[1,2,3,4,5].map(n=>`<span class="star" data-val="${n}" onclick="setRating('${s.name}',${n})">★</span>`).join("")}
+        </div>`;
+      sec.appendChild(row);
+    });
+    container.appendChild(sec);
+  });
+  SKILLS.forEach(s=>{if(skillRatings[s.name]>0)applyStars(s.name,skillRatings[s.name])});
+}
+
+function setRating(name,val){skillRatings[name]=val;applyStars(name,val);}
+function applyStars(name,val){
+  const key=name.replace(/\s/g,"");
+  document.querySelectorAll(`#stars-${key} .star`).forEach(s=>s.classList.toggle("on",parseInt(s.dataset.val)<=val));
+}
+
+// ---- Navigation ----
+function goStep(n){
+  document.getElementById("step-"+currentStep).classList.remove("active");
+  currentStep=n;
+  document.getElementById("step-"+n).classList.add("active");
+  ["p0","p1","p2","p3","p4"].forEach((id,i)=>{
+    document.getElementById(id).className="progress-step"+(i<n?" done":i===n?" current":"");
+  });
+  ["pl0","pl1","pl2","pl3","pl4"].forEach((id,i)=>{
+    document.getElementById(id).className="progress-label"+(i===n?" current":"");
+  });
+  window.scrollTo(0,0);
+  if(n===2)setTimeout(drawLifeline,100);
+  if(n===4)runAnalysis();
+}
+
+function getVal(id){return(document.getElementById(id)?.value||"").trim()}
+
+// ---- API ----
+function buildPrompt(){
+  const prof=[
+    getVal("p_name")?"名前："+getVal("p_name"):null,
+    getVal("p_age")?"年齢："+getVal("p_age")+"歳":null,
+    getVal("p_gender")?"性別："+getVal("p_gender"):null,
+    getVal("p_pref")?"居住地："+getVal("p_pref"):null,
+    getVal("p_job")?"職業・役職："+getVal("p_job"):null,
+    getVal("sns_x")?"X："+getVal("sns_x"):null,
+    getVal("sns_fb")?"Facebook："+getVal("sns_fb"):null,
+    getVal("sns_web")?"Webサイト："+getVal("sns_web"):null,
+  ].filter(Boolean).join("\n");
+  const ll=periods.map((p,i)=>`時期${i+1}「${p.label}」：幸福度${p.score}、出来事：${p.event||"（未記入）"}`).join("\n");
+  const sk=SKILLS.map(s=>`${s.name}（${s.cat}）：${"★".repeat(skillRatings[s.name])}${"☆".repeat(5-skillRatings[s.name])} ${skillRatings[s.name]}/5`).join("\n");
+  return `【リスキリングのための持ち味発見セッション】\n\n■プロフィール\n${prof}\n\n■ライフライン\n${ll}\n\n■社会人基礎力（5段階評価）\n${sk}\n\n以下の3点を日本語で分析してください。\n1. 希少性・市場性・再現性の3軸で「持ち味」を3〜4個、タイトルと説明・3軸評価を含めて抽出する\n2. ライフラインの幸福度パターンから、この人がやりがいを感じる場面・価値観を読み解く\n3. その持ち味を土台に、次のキャリアに向けてリスキリングすべき分野・スキルを具体的に提案する\n最後に「コーチング用フォローアップ質問」として3つの質問を提示してください。各質問は「Q1：」「Q2：」「Q3：」で始めてください。`;
+}
+
+async function callAPI(prompt){
+  const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}],max_tokens:2000})});
+  if(!res.ok){const err=await res.json();throw new Error(err.error||"APIエラー: "+res.status);}
+  const data=await res.json();
+  return data.content.map(c=>c.text||"").join("");
+}
+
+async function runAnalysis(){
+  document.getElementById("analysisArea").innerHTML=`
+    <div class="loading-box">
+      <div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
+      <p style="font-size:13px;color:#888;margin-top:12px">AIが持ち味を分析しています...</p>
+    </div>`;
+  document.getElementById("followupSection").style.display="none";
+  try{
+    const result=await callAPI(buildPrompt());
+    analysisResult=result;
+    const fqs=[];
+    result.split("\n").forEach(line=>{const m=line.match(/^Q([1-3])[:：]\s*(.+)/);if(m)fqs.push({num:m[1],q:m[2].trim()})});
+    document.getElementById("analysisArea").innerHTML=`<div style="font-size:13px;color:#333;line-height:1.8;white-space:pre-wrap;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem">${result}</div>`;
+    if(fqs.length>0){
+      const fqContainer=document.getElementById("fqContainer");fqContainer.innerHTML="";
+      fqs.forEach(({num,q})=>{
+        const card=document.createElement("div");card.className="fq-card";
+        card.innerHTML=`
+          <div class="fq-num">質問 ${num}</div>
+          <div class="fq-question">${q}</div>
+          <button class="fq-open-btn" onclick="toggleFq(${num})"><i class="ti ti-edit"></i> この質問に答える</button>
+          <div class="fq-answer-area" id="fqa-${num}">
+            <textarea id="fq-text-${num}" placeholder="ここに回答を入力してください..." style="min-height:80px;margin-top:8px"></textarea>
+            <button class="fq-submit" onclick="submitFq(${num},'${q.replace(/'/g,"\\'").replace(/\n/g," ")}')"><i class="ti ti-sparkles"></i> AIに深掘りしてもらう</button>
+            <div id="fq-resp-${num}"></div>
+          </div>`;
+        fqContainer.appendChild(card);
+      });
+    }
+    document.getElementById("followupSection").style.display="block";
+  }catch(e){
+    document.getElementById("analysisArea").innerHTML=`<div class="error-box"><strong>エラーが発生しました</strong><br>${e.message}<br><br><button class="btn-secondary" onclick="runAnalysis()"><i class="ti ti-refresh"></i> 再試行する</button></div>`;
+  }
+}
+
+function toggleFq(num){document.getElementById("fqa-"+num).classList.toggle("open")}
+
+async function submitFq(num,question){
+  const answer=document.getElementById("fq-text-"+num).value.trim();
+  if(!answer)return;
+  const respEl=document.getElementById("fq-resp-"+num);
+  respEl.innerHTML=`<div class="loading-box" style="padding:1rem"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>`;
+  try{
+    const result=await callAPI(`以下は持ち味発見セッションのフォローアップ質問への回答です。\n質問：${question}\n回答：${answer}\nこの回答をもとに、リスキリングの観点から具体的なアドバイスと次のアクションを200〜300字で提案してください。`);
+    fqAnswers[num]={q:question,a:answer,resp:result};
+    respEl.innerHTML=`<div class="ai-response">${result}</div>`;
+  }catch(e){respEl.innerHTML=`<div class="error-box">エラー：${e.message}</div>`;}
+}
+
+// ---- PDF ----
+function downloadPdf(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const name=getVal("p_name")||"前川隆昭";
+  const date=new Date().toLocaleDateString("ja-JP");
+  const margin=20,contentW=170;
+  let y=20;
+  function addText(text,x,fontSize,color,maxWidth,lh){
+    doc.setFontSize(fontSize);doc.setTextColor(...(color||[26,26,26]));
+    const lines=doc.splitTextToSize(text,maxWidth||contentW);
+    lines.forEach(line=>{if(y>270){doc.addPage();y=20;}doc.text(line,x,y);y+=lh||fontSize*0.5;});
+  }
+  function addSection(title){
+    if(y>250){doc.addPage();y=20;}
+    y+=4;doc.setFillColor(15,110,86);doc.rect(margin,y-4,contentW,8,"F");
+    doc.setFontSize(11);doc.setTextColor(255,255,255);doc.text(title,margin+3,y+1);
+    y+=10;doc.setTextColor(26,26,26);
+  }
+  doc.setFillColor(15,110,86);doc.rect(0,0,210,30,"F");
+  doc.setFontSize(15);doc.setTextColor(255,255,255);
+  doc.text("前川隆昭の持ち味発見レポート",margin,14);
+  doc.setFontSize(10);doc.text(date,margin,22);
+  y=40;
+  addSection("持ち味分析結果");
+  addText(analysisResult,margin,9,[51,51,51],contentW,5);
+  if(Object.keys(fqAnswers).length>0){
+    y+=4;addSection("フォローアップ Q&A");
+    Object.values(fqAnswers).forEach(f=>{
+      addText("Q："+f.q,margin,9,[15,110,86],contentW,5);y+=2;
+      addText("A："+f.a,margin,9,[51,51,51],contentW,5);y+=2;
+      addText("Claudeより："+f.resp,margin,9,[80,80,80],contentW,5);y+=6;
+    });
+  }
+  const pageCount=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);doc.setFontSize(8);doc.setTextColor(150,150,150);
+    doc.text(`${i} / ${pageCount}　前川隆昭の持ち味発見`,margin,290);
+  }
+  doc.save(`持ち味発見レポート_${name}.pdf`);
+}
+
+// ---- 初期化 ----
+loadSavedIfExists();
+renderPeriods();
+renderSkills();
+setTimeout(drawLifeline,150);
+</script>
+</body>
+</html>
