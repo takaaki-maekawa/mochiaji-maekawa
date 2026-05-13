@@ -473,17 +473,34 @@ async function submitFq(num,question){
 
 // ---- PDF ----
 function downloadPdf(){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  const name=getVal("p_name")||"前川隆昭";
-  const date=new Date().toLocaleDateString("ja-JP");
-  const margin=20,contentW=170;
-  let y=20;
-  function addText(text,x,fontSize,color,maxWidth,lh){
-    doc.setFontSize(fontSize);doc.setTextColor(...(color||[26,26,26]));
-    const lines=doc.splitTextToSize(text,maxWidth||contentW);
-    lines.forEach(line=>{if(y>270){doc.addPage();y=20;}doc.text(line,x,y);y+=lh||fontSize*0.5;});
-  }
+  const name = getVal("p_name") || "前川隆昭";
+  const date = new Date().toLocaleDateString("ja-JP");
+
+  const fqSection = Object.keys(fqAnswers).length > 0
+    ? `\n${"=".repeat(40)}\nフォローアップ Q&A\n${"=".repeat(40)}\n` +
+      Object.values(fqAnswers).map(f =>
+        `Q：${f.q}\nA：${f.a}\nClaudeより：${f.resp}`
+      ).join("\n\n")
+    : "";
+
+  const content =
+    `前川隆昭の持ち味発見レポート\n` +
+    `氏名：${name}\n` +
+    `作成日：${date}\n\n` +
+    `${"=".repeat(40)}\n` +
+    `持ち味分析結果\n` +
+    `${"=".repeat(40)}\n` +
+    `${analysisResult}` +
+    `${fqSection}`;
+
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `持ち味発見レポート_${name}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
   function addSection(title){
     if(y>250){doc.addPage();y=20;}
     y+=4;doc.setFillColor(15,110,86);doc.rect(margin,y-4,contentW,8,"F");
