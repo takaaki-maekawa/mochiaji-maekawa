@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>前川隆昭の持ち味発見</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;background:#f8faf9;color:#1a1a1a;min-height:100vh}
@@ -473,61 +473,45 @@ async function submitFq(num,question){
 
 // ---- PDF ----
 function downloadPdf(){
-  const name = getVal("p_name") || "前川隆昭";
-  const date = new Date().toLocaleDateString("ja-JP");
-
+  const name = getVal('p_name') || '前川隆昭';
+  const date = new Date().toLocaleDateString('ja-JP');
+  const sep = '='.repeat(50);
   const fqSection = Object.keys(fqAnswers).length > 0
-    ? `\n${"=".repeat(40)}\nフォローアップ Q&A\n${"=".repeat(40)}\n` +
+    ? '
+
+' + sep + '
+フォローアップ Q&A
+' + sep + '
+' +
       Object.values(fqAnswers).map(f =>
-        `Q：${f.q}\nA：${f.a}\nClaudeより：${f.resp}`
-      ).join("\n\n")
-    : "";
+        'Q：' + f.q + '
+A：' + f.a + '
+Claudeより：' + f.resp
+      ).join('
 
+')
+    : '';
   const content =
-    `前川隆昭の持ち味発見レポート\n` +
-    `氏名：${name}\n` +
-    `作成日：${date}\n\n` +
-    `${"=".repeat(40)}\n` +
-    `持ち味分析結果\n` +
-    `${"=".repeat(40)}\n` +
-    `${analysisResult}` +
-    `${fqSection}`;
+    '前川隆昭の持ち味発見レポート
+' +
+    '氏名：' + name + '
+' +
+    '作成日：' + date + '
 
-  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+' +
+    sep + '
+持ち味分析結果
+' + sep + '
+' +
+    analysisResult + fqSection;
+  const bom = '﻿';
+  const blob = new Blob([bom + content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
-  a.download = `持ち味発見レポート_${name}.txt`;
+  a.download = '持ち味発見レポート_' + name + '.txt';
   a.click();
   URL.revokeObjectURL(url);
-}
-  function addSection(title){
-    if(y>250){doc.addPage();y=20;}
-    y+=4;doc.setFillColor(15,110,86);doc.rect(margin,y-4,contentW,8,"F");
-    doc.setFontSize(11);doc.setTextColor(255,255,255);doc.text(title,margin+3,y+1);
-    y+=10;doc.setTextColor(26,26,26);
-  }
-  doc.setFillColor(15,110,86);doc.rect(0,0,210,30,"F");
-  doc.setFontSize(15);doc.setTextColor(255,255,255);
-  doc.text("前川隆昭の持ち味発見レポート",margin,14);
-  doc.setFontSize(10);doc.text(date,margin,22);
-  y=40;
-  addSection("持ち味分析結果");
-  addText(analysisResult,margin,9,[51,51,51],contentW,5);
-  if(Object.keys(fqAnswers).length>0){
-    y+=4;addSection("フォローアップ Q&A");
-    Object.values(fqAnswers).forEach(f=>{
-      addText("Q："+f.q,margin,9,[15,110,86],contentW,5);y+=2;
-      addText("A："+f.a,margin,9,[51,51,51],contentW,5);y+=2;
-      addText("Claudeより："+f.resp,margin,9,[80,80,80],contentW,5);y+=6;
-    });
-  }
-  const pageCount=doc.internal.getNumberOfPages();
-  for(let i=1;i<=pageCount;i++){
-    doc.setPage(i);doc.setFontSize(8);doc.setTextColor(150,150,150);
-    doc.text(`${i} / ${pageCount}　前川隆昭の持ち味発見`,margin,290);
-  }
-  doc.save(`持ち味発見レポート_${name}.pdf`);
 }
 
 // ---- 初期化 ----
