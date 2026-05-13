@@ -475,37 +475,21 @@ async function submitFq(num,question){
 function downloadPdf(){
   const name = getVal('p_name') || '前川隆昭';
   const date = new Date().toLocaleDateString('ja-JP');
-  const sep = '='.repeat(50);
+  const sep = '==================================================';
   const fqSection = Object.keys(fqAnswers).length > 0
-    ? '
-
-' + sep + '
-フォローアップ Q&A
-' + sep + '
-' +
+    ? '\n\n' + sep + '\nフォローアップ Q&A\n' + sep + '\n' +
       Object.values(fqAnswers).map(f =>
-        'Q：' + f.q + '
-A：' + f.a + '
-Claudeより：' + f.resp
-      ).join('
-
-')
+        'Q：' + f.q + '\nA：' + f.a + '\nClaudeより：' + f.resp
+      ).join('\n\n')
     : '';
   const content =
-    '前川隆昭の持ち味発見レポート
-' +
-    '氏名：' + name + '
-' +
-    '作成日：' + date + '
-
-' +
-    sep + '
-持ち味分析結果
-' + sep + '
-' +
+    '前川隆昭の持ち味発見レポート\n' +
+    '氏名：' + name + '\n' +
+    '作成日：' + date + '\n\n' +
+    sep + '\n持ち味分析結果\n' + sep + '\n' +
     analysisResult + fqSection;
-  const bom = '﻿';
-  const blob = new Blob([bom + content], { type: 'text/plain;charset=utf-8' });
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + content], {type:'text/plain;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
