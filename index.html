@@ -264,7 +264,7 @@ canvas{border-radius:8px;border:1px solid #e0e0e0;background:#fafafa;width:100%;
 </div>
 
 <script>
-const SKILLS=[
+var SKILLS=[
   {cat:"前に踏み出す力",name:"主体性",desc:"進んで物事に取り組む"},
   {cat:"前に踏み出す力",name:"働きかけ力",desc:"他人を巻き込む"},
   {cat:"前に踏み出す力",name:"実行力",desc:"目的を設定し行動する"},
@@ -279,13 +279,13 @@ const SKILLS=[
   {cat:"チームで働く力",name:"ストレス対応",desc:"発生源に対応する"},
 ];
 
-let skillRatings={
+var skillRatings={
   "主体性":5,"働きかけ力":4,"実行力":4,
   "課題発見力":4,"計画力":3,"創造力":3,
   "発信力":4,"傾聴力":2,"柔軟性":2,
   "情況把握力":3,"規律性":4,"ストレス対応":3
 };
-let periods=[
+var periods=[
   {label:"①1981-1992（研究所）",score:75,event:"三菱電機の研究所入社。開発中止、米国出張、製品化断念、本部長表彰、米企業との提携など紆余曲折を経ながらもやりがいをみい出す。結婚、双子誕生。"},
   {label:"②1992-2002（神戸製作所）",score:20,event:"開発したシステムの製品化のため工場へ異動。パワハラ上司、阪神大震災などで苦労するも、システム出荷。「7つの習慣」に出会う。触発され課長昇進。"},
   {label:"③2002-2003（米国駐在）",score:70,event:"シリコンバレーに1年半駐在。3人所帯のGM拝命。オープンな雰囲気、会社を越えた技術者の交流など、学びと異文化交流を体験。"},
@@ -294,18 +294,18 @@ let periods=[
   {label:"⑥2011-2020（人材開発センター）",score:85,event:"人事部・人材開発センターに異動。全社のS/W人材育成を担当。新入社員から管理職まで述べ3000名を育成。「7つの習慣」講師、キャリコン資格取得。"},
   {label:"⑦2021〜現在（個人事務所）",score:90,event:"65歳で退職後、ヒューマンフロント研究所を開業。企業研修講師、大学講師、地元自治体主催の講座講師など、まだまだ元気！"},
 ];
-let currentStep=0;
-let analysisResult='';
-let fqAnswers={};
+var currentStep=0;
+var analysisResult='';
+var fqAnswers={};
 
 // ---- データ保存・読み込み ----
 function saveData(){
-  const data={
+  var data={
     profile:{name:getVal("p_name"),age:getVal("p_age"),gender:getVal("p_gender"),pref:getVal("p_pref"),job:getVal("p_job"),sns_x:getVal("sns_x"),sns_fb:getVal("sns_fb"),sns_li:getVal("sns_li"),sns_ig:getVal("sns_ig"),sns_web:getVal("sns_web")},
     periods:[...periods],skills:{...skillRatings},savedAt:new Date().toLocaleDateString("ja-JP")
   };
   localStorage.setItem("mochimi_data",JSON.stringify(data));
-  const s=document.getElementById("saveStatus");
+  var s=document.getElementById("saveStatus");
   s.innerHTML='<span class="saved-badge"><i class="ti ti-check"></i> 保存しました（'+data.savedAt+'）</span>';
   setTimeout(function(){s.innerHTML=""},4000);
 }
@@ -658,9 +658,9 @@ function drawSkillChart(){
     // カテゴリ色
     var color=s.cat==="前に踏み出す力"?"#1D9E75":s.cat==="考え抜く力"?"#534AB7":"#BA7517";
     // 背景バー
-    ctx.fillStyle="#e8e8e8";ctx.beginPath();ctx.roundRect(padL,y,gW,barH,3);ctx.fill();
+    ctx.fillStyle="#e8e8e8";ctx.fillRect(padL,y,gW,barH);
     // 実際のバー
-    if(barW>0){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(padL,y,barW,barH,3);ctx.fill();}
+    if(barW>0){ctx.fillStyle=color;ctx.fillRect(padL,y,barW,barH);}
     // スキル名
     ctx.fillStyle="#333";ctx.font="11px sans-serif";ctx.textAlign="right";
     ctx.fillText(s.name,padL-6,y+barH/2+4);
