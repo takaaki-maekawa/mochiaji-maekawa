@@ -218,9 +218,12 @@ canvas{border-radius:8px;border:1px solid #e0e0e0;background:#fafafa;width:100%;
   <h2>社会人基礎力 スキル評価</h2>
   <p class="lead">各スキルについて、自分の強さを★で5段階評価してください。</p>
   <div id="skillsContainer"></div>
+  <canvas id="skillChart" height="320" style="border-radius:8px;border:1px solid #e0e0e0;background:#fafafa;width:100%;display:block;margin:1rem 0;"></canvas>
   <div class="btn-row">
     <button class="btn-secondary" onclick="goStep(2)"><i class="ti ti-arrow-left"></i> 戻る</button>
     <button class="btn-primary" onclick="goStep(4)">AI分析を依頼する <i class="ti ti-sparkles"></i></button>
+    <button class="btn-green" onclick="downloadSkillText()"><i class="ti ti-download"></i> テキストで保存（.txt）</button>
+    <button class="btn-amber" onclick="downloadSkillPng()"><i class="ti ti-photo"></i> 画像で保存（.png）</button>
   </div>
 </div>
 
@@ -442,9 +445,10 @@ function renderSkills(){
     container.appendChild(sec);
   });
   SKILLS.forEach(function(s){if(skillRatings[s.name]>0)applyStars(s.name,skillRatings[s.name]);});
+  setTimeout(drawSkillChart,100);
 }
 
-function setRating(name,val){skillRatings[name]=val;applyStars(name,val);}
+function setRating(name,val){skillRatings[name]=val;applyStars(name,val);drawSkillChart();}
 function applyStars(name,val){
   var key=name.replace(/\s/g,"");
   var stars=document.querySelectorAll("#stars-"+key+" .star");
@@ -464,6 +468,7 @@ function goStep(n){
   });
   window.scrollTo(0,0);
   if(n===2)setTimeout(drawLifeline,100);
+  if(n===3)setTimeout(drawSkillChart,100);
   if(n===4)runAnalysis();
 }
 
@@ -630,6 +635,84 @@ function downloadReport(){
   a.download="持ち味発見レポート_"+name+".txt";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ---- スキルチャート描画 ----
+function drawSkillChart(){
+  var canvas=document.getElementById("skillChart");if(!canvas)return;
+  var dpr=window.devicePixelRatio||1,W=canvas.offsetWidth||680,H=320;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  var ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  ctx.fillStyle="#f8faf9";ctx.fillRect(0,0,W,H);
+  var padL=120,padR=60,padT=30,padB=20;
+  var gW=W-padL-padR,gH=H-padT-padB;
+  var barH=Math.min(22,gH/SKILLS.length-4);
+  // タイトル
+  ctx.fillStyle="#0F6E56";ctx.font="bold 13px sans-serif";ctx.textAlign="left";
+  ctx.fillText("社会人基礎力 スキル評価",padL,16);
+  // 各スキルのバー
+  SKILLS.forEach(function(s,i){
+    var y=padT+i*(gH/SKILLS.length)+4;
+    var rating=skillRatings[s.name]||0;
+    var barW=(rating/5)*gW;
+    // カテゴリ色
+    var color=s.cat==="前に踏み出す力"?"#1D9E75":s.cat==="考え抜く力"?"#534AB7":"#BA7517";
+    // 背景バー
+    ctx.fillStyle="#e8e8e8";ctx.beginPath();ctx.roundRect(padL,y,gW,barH,3);ctx.fill();
+    // 実際のバー
+    if(barW>0){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(padL,y,barW,barH,3);ctx.fill();}
+    // スキル名
+    ctx.fillStyle="#333";ctx.font="11px sans-serif";ctx.textAlign="right";
+    ctx.fillText(s.name,padL-6,y+barH/2+4);
+    // 評価数値
+    ctx.fillStyle="#fff";ctx.font="bold 10px sans-serif";ctx.textAlign="left";
+    if(barW>20)ctx.fillText(rating+"/5",padL+barW-22,y+barH/2+4);
+    else{ctx.fillStyle="#555";ctx.fillText(rating+"/5",padL+barW+4,y+barH/2+4);}
+    // 星表示
+    ctx.fillStyle=color;ctx.font="10px sans-serif";ctx.textAlign="left";
+    var stars="";for(var j=0;j<rating;j++)stars+="★";for(var j=rating;j<5;j++)stars+="☆";
+    ctx.fillText(stars,W-padR+4,y+barH/2+4);
+  });
+  // 凡例
+  var cats=[{name:"前に踏み出す力",color:"#1D9E75"},{name:"考え抜く力",color:"#534AB7"},{name:"チームで働く力",color:"#BA7517"}];
+  var lx=padL,ly=H-8;
+  cats.forEach(function(c){
+    ctx.fillStyle=c.color;ctx.fillRect(lx,ly-8,10,8);
+    ctx.fillStyle="#555";ctx.font="9px sans-serif";ctx.textAlign="left";
+    ctx.fillText(c.name,lx+13,ly);
+    lx+=ctx.measureText(c.name).width+30;
+  });
+}
+
+// ---- スキルテキスト出力 ----
+function downloadSkillText(){
+  var name=getVal("p_name")||"ユーザー";
+  var date=new Date().toLocaleDateString("ja-JP");
+  var sep="=".repeat(50);
+  var lines=["社会人基礎力 スキル評価","氏名："+name,"出力日："+date,"",sep,""];
+  var currentCat="";
+  SKILLS.forEach(function(s){
+    if(s.cat!==currentCat){currentCat=s.cat;lines.push("");lines.push("【"+s.cat+"】");}
+    var r=skillRatings[s.name]||0;
+    var stars="";for(var j=0;j<r;j++)stars+="★";for(var j=r;j<5;j++)stars+="☆";
+    lines.push("  "+s.name+"："+stars+" "+r+"/5　"+s.desc);
+  });
+  var bom="﻿";
+  var blob=new Blob([bom+lines.join("
+")],{type:"text/plain;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download="社会人基礎力_"+name+".txt";a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---- スキルPNG出力 ----
+function downloadSkillPng(){
+  var name=getVal("p_name")||"ユーザー";
+  var canvas=document.getElementById("skillChart");if(!canvas)return;
+  var url=canvas.toDataURL("image/png");
+  var a=document.createElement("a");
+  a.href=url;a.download="社会人基礎力_"+name+".png";a.click();
 }
 
 // ---- ライフラインPNG出力 ----
