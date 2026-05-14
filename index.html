@@ -251,9 +251,9 @@ canvas{border-radius:8px;border:1px solid #e0e0e0;background:#fafafa;width:100%;
     </div>
     <div style="margin-top:1rem"></div>
     <div class="action-section">
-      <div class="action-section-title"><i class="ti ti-file-text"></i> レポートを保存する</div>
+      <div class="action-section-title"><i class="ti ti-file-text"></i> レポートを出力する</div>
       <div class="action-section-desc">分析結果・フォローアップQ&Aをテキストファイルとしてダウンロードできます。</div>
-      <button class="btn-amber" onclick="downloadReport()"><i class="ti ti-download"></i> レポートを保存する（.txt）</button>
+      <button class="btn-amber" onclick="downloadReport()"><i class="ti ti-download"></i> レポートを出力する（.txt）</button>
     </div>
   </div>
   <div class="btn-row" style="margin-top:1.5rem">
@@ -605,7 +605,7 @@ function stripMarkdown(text){
     .trim();
 }
 
-// ---- レポート保存 ----
+// ---- レポート出力 ----
 function downloadReport(){
   var name=getVal("p_name")||"ユーザー";
   var date=new Date().toLocaleDateString("ja-JP");
