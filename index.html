@@ -627,7 +627,7 @@ function downloadReport(){
     "作成日："+date+"\n\n"+
     sep+"\n持ち味分析結果\n"+sep+"\n\n"+
     cleanResult+fqSection;
-  var bom="\uFEFF";
+  var bom="﻿";
   var blob=new Blob([bom+content],{type:"text/plain;charset=utf-8"});
   var url=URL.createObjectURL(blob);
   var a=document.createElement("a");
@@ -688,18 +688,16 @@ function drawSkillChart(){
 function downloadSkillText(){
   var name=getVal("p_name")||"ユーザー";
   var date=new Date().toLocaleDateString("ja-JP");
-  var sep="=".repeat(50);
-  var lines=["社会人基礎力 スキル評価","氏名："+name,"出力日："+date,"",sep,""];
+  var sep="==================================================";
+  var text="社会人基礎力 スキル評価" + "\n" + "氏名：" + name + "\n" + "出力日：" + date + "\n\n" + sep + "\n";
   var currentCat="";
   SKILLS.forEach(function(s){
-    if(s.cat!==currentCat){currentCat=s.cat;lines.push("");lines.push("【"+s.cat+"】");}
+    if(s.cat!==currentCat){currentCat=s.cat;text+="\n【"+s.cat+"】\n";}
     var r=skillRatings[s.name]||0;
     var stars="";for(var j=0;j<r;j++)stars+="★";for(var j=r;j<5;j++)stars+="☆";
-    lines.push("  "+s.name+"："+stars+" "+r+"/5　"+s.desc);
+    text+="  "+s.name+"："+stars+" "+r+"/5\n";
   });
-  var bom="﻿";
-  var blob=new Blob([bom+lines.join("
-")],{type:"text/plain;charset=utf-8"});
+  var blob=new Blob(["﻿"+text],{type:"text/plain;charset=utf-8"});
   var url=URL.createObjectURL(blob);
   var a=document.createElement("a");
   a.href=url;a.download="社会人基礎力_"+name+".txt";a.click();
@@ -754,8 +752,9 @@ function downloadLifeline(){
     if(p.event){lines.push("出来事："+p.event);}
     lines.push("");
   });
-  var bom="\uFEFF";
-  var blob=new Blob([bom+lines.join("\n")],{type:"text/plain;charset=utf-8"});
+  var bom="﻿";
+  var blob=new Blob([bom+lines.join("
+")],{type:"text/plain;charset=utf-8"});
   var url=URL.createObjectURL(blob);
   var a=document.createElement("a");
   a.href=url;
