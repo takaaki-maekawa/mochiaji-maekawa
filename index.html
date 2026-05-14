@@ -508,8 +508,7 @@ function buildPrompt(){
     "形式を変えず、必ずQ1・Q2・Q3の順で出力してください。\n"+
     "Q1：（質問文をここに記載）\n"+
     "Q2：（質問文をここに記載）\n"+
-    "Q3：（質問文をここに記載）";
-}
+    "Q3：（質問文をここに記載）\n";
 
 async function callAPI(prompt){
   var res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}],max_tokens:4000})});
