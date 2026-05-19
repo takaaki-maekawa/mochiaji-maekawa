@@ -109,7 +109,6 @@ canvas{border-radius:8px;border:1px solid #e0e0e0;background:#fafafa;width:100%;
 .choice-card-desc{font-size:12px;color:#888;line-height:1.5}
 .load-panel{border:1px solid #5DCAA5;border-radius:12px;padding:1.25rem;background:#E1F5EE;margin-bottom:1.5rem;display:none}
 .load-panel-title{font-size:13px;color:#0F6E56;margin-bottom:10px;font-weight:600}
-/* パスワード画面 */
 .pw-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f8faf9;z-index:1000;display:flex;align-items:center;justify-content:center}
 .pw-box{background:#fff;border:1px solid #e0e0e0;border-radius:16px;padding:2.5rem 2rem;max-width:380px;width:90%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08)}
 .pw-logo{font-size:32px;margin-bottom:1rem}
@@ -521,6 +520,7 @@ function drawLifeline(){
   });
 }
 
+// ---- Skills ----
 function renderSkills(){
   var container=document.getElementById("skillsContainer");container.innerHTML="";
   var cats=[];
@@ -551,6 +551,7 @@ function applyStars(name,val){
   stars.forEach(function(s){s.classList.toggle("on",parseInt(s.dataset.val)<=val);});
 }
 
+// ---- Navigation ----
 function goStep(n){
   document.getElementById("step-"+currentStep).classList.remove("active");
   currentStep=n;
@@ -569,6 +570,7 @@ function goStep(n){
 
 function getVal(id){return(document.getElementById(id)?document.getElementById(id).value:"").trim();}
 
+// ---- API呼び出し ----
 function buildPrompt(){
   var profArr=[
     getVal("p_name")?"名前："+getVal("p_name"):null,
@@ -598,7 +600,8 @@ function buildPrompt(){
     "2. ライフラインの幸福度パターンから、この人がやりがいを感じる場面・価値観を読み解く\n"+
     "3. その持ち味を土台に、次のキャリアに向けてリスキリングすべき分野・スキルを具体的に提案する\n\n"+
     "分析の最後に、必ず以下の形式でコーチング用フォローアップ質問を3つ出力してください。\n"+
-    "形式を変えず、必ずQ1・Q2・Q3の順で出力してください。\n"+
+    "マークダウン（**や##など）は使わず、プレーンテキストで出力してください。\n"+
+    "必ずQ1・Q2・Q3の順で、各行の先頭から出力してください。\n"+
     "Q1：（質問文をここに記載）\n"+
     "Q2：（質問文をここに記載）\n"+
     "Q3：（質問文をここに記載）";
@@ -613,29 +616,41 @@ async function callAPI(prompt){
 
 async function runAnalysis(){
   document.getElementById("analysisArea").innerHTML=
-    '<div class="loading-box"><div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div><p style="font-size:13px;color:#888;margin-top:12px">AIが持ち味を分析しています...</p></div>';
+    '<div class="loading-box">'+
+    '<div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>'+
+    '<p style="font-size:13px;color:#888;margin-top:12px">AIが持ち味を分析しています...</p>'+
+    '</div>';
   document.getElementById("followupSection").style.display="none";
   try{
     var result=await callAPI(buildPrompt());
     analysisResult=result;
+
+    // ---- フォローアップ質問の抽出（マークダウン記号を除去して認識） ----
     var fqs=[];
     result.split("\n").forEach(function(line){
-      var m=line.match(/^Q([1-3])[：:]\s*(.+)/);
+      var clean=line.replace(/\*\*/g,"").replace(/^\s*[-#]+\s*/,"").trim();
+      var m=clean.match(/^Q([1-3])[：:]\s*(.+)/);
       if(m)fqs.push({num:m[1],q:m[2].trim()});
     });
+
     document.getElementById("analysisArea").innerHTML=
       '<div style="font-size:13px;color:#333;line-height:1.8;white-space:pre-wrap;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem">'+result+'</div>';
-    var fqContainer=document.getElementById("fqContainer");fqContainer.innerHTML="";
+
+    var fqContainer=document.getElementById("fqContainer");
+    fqContainer.innerHTML="";
     if(fqs.length>0){
       fqs.forEach(function(fq){
         var card=document.createElement("div");card.className="fq-card";
         var safeQ=fq.q.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-        card.innerHTML='<div class="fq-num">質問 '+fq.num+'</div><div class="fq-question">'+fq.q+'</div>'+
+        card.innerHTML=
+          '<div class="fq-num">質問 '+fq.num+'</div>'+
+          '<div class="fq-question">'+fq.q+'</div>'+
           '<button class="fq-open-btn" onclick="toggleFq('+fq.num+')"><i class="ti ti-edit"></i> この質問に答える</button>'+
           '<div class="fq-answer-area" id="fqa-'+fq.num+'">'+
           '<textarea id="fq-text-'+fq.num+'" placeholder="ここに回答を入力してください..." style="min-height:80px;margin-top:8px"></textarea>'+
           '<button class="fq-submit" onclick="submitFq('+fq.num+',\''+safeQ+'\')"><i class="ti ti-sparkles"></i> AIに深掘りしてもらう</button>'+
-          '<div id="fq-resp-'+fq.num+'"></div></div>';
+          '<div id="fq-resp-'+fq.num+'"></div>'+
+          '</div>';
         fqContainer.appendChild(card);
       });
     }else{
@@ -649,7 +664,10 @@ async function runAnalysis(){
   }
 }
 
-function toggleFq(num){var area=document.getElementById("fqa-"+num);if(area)area.classList.toggle("open");}
+function toggleFq(num){
+  var area=document.getElementById("fqa-"+num);
+  if(area)area.classList.toggle("open");
+}
 
 async function submitFq(num,question){
   var answer=document.getElementById("fq-text-"+num).value.trim();
@@ -660,16 +678,21 @@ async function submitFq(num,question){
     var result=await callAPI("以下は持ち味発見セッションのフォローアップ質問への回答です。\n質問："+question+"\n回答："+answer+"\nこの回答をもとに、リスキリングの観点から具体的なアドバイスと次のアクションを200〜300字で提案してください。");
     fqAnswers[num]={q:question,a:answer,resp:result};
     respEl.innerHTML='<div class="ai-response">'+result+'</div>';
-  }catch(e){respEl.innerHTML='<div class="error-box">エラー：'+e.message+'</div>';}
+  }catch(e){
+    respEl.innerHTML='<div class="error-box">エラー：'+e.message+'</div>';
+  }
 }
 
+// ---- マークダウン除去 ----
 function stripMarkdown(text){
-  return text.replace(/#{1,6}\s*/g,"").replace(/\*\*(.*?)\*\*/g,"$1").replace(/\*(.*?)\*/g,"$1")
+  return text
+    .replace(/#{1,6}\s*/g,"").replace(/\*\*(.*?)\*\*/g,"$1").replace(/\*(.*?)\*/g,"$1")
     .replace(/^\s*[-*]\s+/gm,"・").replace(/^\s*\d+\.\s+/gm,"")
     .replace(/`{1,3}(.*?)`{1,3}/g,"$1").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1")
     .replace(/\n{3,}/g,"\n\n").trim();
 }
 
+// ---- レポート出力 ----
 function downloadReport(){
   var name=getVal("p_name")||"ユーザー";
   var date=new Date().toLocaleDateString("ja-JP");
@@ -679,14 +702,19 @@ function downloadReport(){
   var fqSection="";
   if(keys.length>0){
     fqSection="\n\n"+sep+"\nフォローアップ Q&A\n"+sep+"\n";
-    fqSection+=keys.map(function(k){var f=fqAnswers[k];return "Q："+f.q+"\n\nA："+f.a+"\n\nClaudeより："+stripMarkdown(f.resp);}).join("\n\n------------------------------\n\n");
+    fqSection+=keys.map(function(k){
+      var f=fqAnswers[k];
+      return "Q："+f.q+"\n\nA："+f.a+"\n\nClaudeより："+stripMarkdown(f.resp);
+    }).join("\n\n------------------------------\n\n");
   }
   var content="リスキリングのための持ち味発見レポート\n氏名："+name+"\n作成日："+date+"\n\n"+sep+"\n持ち味分析結果\n"+sep+"\n\n"+cleanResult+fqSection;
   var blob=new Blob(["\uFEFF"+content],{type:"text/plain;charset=utf-8"});
   var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");a.href=url;a.download="持ち味発見レポート_"+name+".txt";a.click();URL.revokeObjectURL(url);
+  var a=document.createElement("a");a.href=url;a.download="持ち味発見レポート_"+name+".txt";a.click();
+  URL.revokeObjectURL(url);
 }
 
+// ---- スキルチャート描画 ----
 function drawSkillChart(){
   var canvas=document.getElementById("skillChart");if(!canvas)return;
   var dpr=window.devicePixelRatio||1,W=canvas.offsetWidth||680,H=320;
@@ -711,11 +739,17 @@ function drawSkillChart(){
   });
   var cats=[{name:"前に踏み出す力",color:"#1D9E75"},{name:"考え抜く力",color:"#534AB7"},{name:"チームで働く力",color:"#BA7517"}];
   var lx=padL,ly=H-8;
-  cats.forEach(function(c){ctx.fillStyle=c.color;ctx.fillRect(lx,ly-8,10,8);ctx.fillStyle="#555";ctx.font="9px sans-serif";ctx.textAlign="left";ctx.fillText(c.name,lx+13,ly);lx+=ctx.measureText(c.name).width+30;});
+  cats.forEach(function(c){
+    ctx.fillStyle=c.color;ctx.fillRect(lx,ly-8,10,8);
+    ctx.fillStyle="#555";ctx.font="9px sans-serif";ctx.textAlign="left";ctx.fillText(c.name,lx+13,ly);
+    lx+=ctx.measureText(c.name).width+30;
+  });
 }
 
+// ---- スキルテキスト出力 ----
 function downloadSkillText(){
-  var name=getVal("p_name")||"ユーザー",date=new Date().toLocaleDateString("ja-JP"),sep="==================================================";
+  var name=getVal("p_name")||"ユーザー",date=new Date().toLocaleDateString("ja-JP");
+  var sep="==================================================";
   var text="社会人基礎力 スキル評価\n氏名："+name+"\n出力日："+date+"\n\n"+sep+"\n",currentCat="";
   SKILLS.forEach(function(s){
     if(s.cat!==currentCat){currentCat=s.cat;text+="\n【"+s.cat+"】\n";}
@@ -724,25 +758,39 @@ function downloadSkillText(){
     text+=" "+s.name+"："+stars+" "+r+"/5\n";
   });
   var blob=new Blob(["\uFEFF"+text],{type:"text/plain;charset=utf-8"});
-  var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="社会人基礎力_"+name+".txt";a.click();URL.revokeObjectURL(url);
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="社会人基礎力_"+name+".txt";a.click();
+  URL.revokeObjectURL(url);
 }
 
+// ---- スキルPNG出力 ----
 function downloadSkillPng(){
-  var name=getVal("p_name")||"ユーザー",canvas=document.getElementById("skillChart");if(!canvas)return;
+  var name=getVal("p_name")||"ユーザー";
+  var canvas=document.getElementById("skillChart");if(!canvas)return;
   var a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="社会人基礎力_"+name+".png";a.click();
 }
 
+// ---- ライフラインPNG出力 ----
 function downloadLifelinePng(){
-  var name=getVal("p_name")||"ユーザー",canvas=document.getElementById("lifeline");if(!canvas)return;
+  var name=getVal("p_name")||"ユーザー";
+  var canvas=document.getElementById("lifeline");if(!canvas)return;
   var a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="ライフライン_"+name+".png";a.click();
 }
 
+// ---- ライフラインテキスト出力 ----
 function downloadLifeline(){
-  var name=getVal("p_name")||"ユーザー",date=new Date().toLocaleDateString("ja-JP"),sep="==================================================";
+  var name=getVal("p_name")||"ユーザー",date=new Date().toLocaleDateString("ja-JP");
+  var sep="==================================================";
   var text="ライフラインチャート\n氏名："+name+"\n出力日："+date+"\n\n"+sep+"\n\n";
-  periods.forEach(function(p,i){text+="時期"+(i+1)+"「"+p.label+"」：幸福度"+(p.score>0?"+":"")+p.score+"\n"+(p.event?"出来事："+p.event+"\n":"")+"\n";});
+  periods.forEach(function(p,i){
+    text+="時期"+(i+1)+"「"+p.label+"」：幸福度"+(p.score>0?"+":"")+p.score+"\n";
+    if(p.event)text+="出来事："+p.event+"\n";
+    text+="\n";
+  });
   var blob=new Blob(["\uFEFF"+text],{type:"text/plain;charset=utf-8"});
-  var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="ライフライン_"+name+".txt";a.click();URL.revokeObjectURL(url);
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="ライフライン_"+name+".txt";a.click();
+  URL.revokeObjectURL(url);
 }
 </script>
 </body>
