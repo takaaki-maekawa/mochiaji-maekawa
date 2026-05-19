@@ -401,9 +401,7 @@ function saveToFile(){
   var blob=new Blob([json],{type:"application/json;charset=utf-8"});
   var url=URL.createObjectURL(blob);
   var a=document.createElement("a");
-  a.href=url;
-  a.download=filename+".json";
-  a.click();
+  a.href=url;a.download=filename+".json";a.click();
   URL.revokeObjectURL(url);
   var s=document.getElementById("saveStatus");
   s.innerHTML='<span class="saved-badge"><i class="ti ti-check"></i> 「'+filename+'.json」を保存しました</span>';
@@ -487,20 +485,17 @@ function drawLifeline(){
   canvas.width=W*dpr;canvas.height=H*dpr;
   var ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   var padL=48,padR=20,padT=20,padB=40;
-  var gW=W-padL-padR,gH=H-padT-padB;
-  var mid=padT+gH/2;
+  var gW=W-padL-padR,gH=H-padT-padB,mid=padT+gH/2;
   ctx.fillStyle="#f8faf9";ctx.fillRect(0,0,W,H);
   ctx.strokeStyle="rgba(0,0,0,0.08)";ctx.lineWidth=0.5;
   [100,50,0,-50,-100].forEach(function(v){
     var y=padT+gH/2-(v/100)*(gH/2);
     ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
-    ctx.fillStyle="#999";ctx.font="10px sans-serif";ctx.textAlign="right";
-    ctx.fillText(v,padL-4,y+4);
+    ctx.fillStyle="#999";ctx.font="10px sans-serif";ctx.textAlign="right";ctx.fillText(v,padL-4,y+4);
   });
   ctx.strokeStyle="rgba(0,0,0,0.2)";ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(padL,mid);ctx.lineTo(W-padR,mid);ctx.stroke();
-  ctx.fillStyle="#0F6E56";ctx.font="bold 13px sans-serif";ctx.textAlign="left";
-  ctx.fillText("ライフラインチャート",padL,12);
+  ctx.fillStyle="#0F6E56";ctx.font="bold 13px sans-serif";ctx.textAlign="left";ctx.fillText("ライフラインチャート",padL,12);
   if(periods.length<2)return;
   var step=gW/(periods.length-1);
   var pts=periods.map(function(p,i){return{x:padL+i*step,y:padT+gH/2-(p.score/100)*(gH/2)};});
@@ -515,8 +510,7 @@ function drawLifeline(){
     var label=periods[i].label.length>8?periods[i].label.substring(0,8)+"..":periods[i].label;
     ctx.fillText(label,pt.x,H-padB+14);
     ctx.fillStyle="#0F6E56";ctx.font="bold 10px sans-serif";
-    var scoreLabel=(periods[i].score>0?"+":"")+periods[i].score;
-    ctx.fillText(scoreLabel,pt.x,pt.y-10);
+    ctx.fillText((periods[i].score>0?"+":"")+periods[i].score,pt.x,pt.y-10);
   });
 }
 
@@ -570,6 +564,29 @@ function goStep(n){
 
 function getVal(id){return(document.getElementById(id)?document.getElementById(id).value:"").trim();}
 
+// ---- フォローアップ質問の抽出 ----
+// AIの出力からマークダウン記号を完全除去してQ1〜Q3を確実に抽出する
+function extractFqs(text){
+  var fqs=[];
+  var lines=text.split("\n");
+  for(var i=0;i<lines.length;i++){
+    // あらゆるマークダウン・装飾を除去
+    var clean=lines[i]
+      .replace(/\*\*/g,"")
+      .replace(/\*/g,"")
+      .replace(/^#+\s*/,"")
+      .replace(/^-+\s*/,"")
+      .replace(/^\s+/,"")
+      .trim();
+    // Q1: Q2: Q3: または Q1： Q2： Q3： にマッチ
+    var m=clean.match(/^Q([1-3])\s*[：:]\s*(.+)/);
+    if(m){
+      fqs.push({num:m[1],q:m[2].trim()});
+    }
+  }
+  return fqs;
+}
+
 // ---- API呼び出し ----
 function buildPrompt(){
   var profArr=[
@@ -599,16 +616,21 @@ function buildPrompt(){
     "1. 希少性・市場性・再現性の3軸で「持ち味」を3〜4個、タイトルと説明・3軸評価を含めて抽出する\n"+
     "2. ライフラインの幸福度パターンから、この人がやりがいを感じる場面・価値観を読み解く\n"+
     "3. その持ち味を土台に、次のキャリアに向けてリスキリングすべき分野・スキルを具体的に提案する\n\n"+
-    "分析の最後に、必ず以下の形式でコーチング用フォローアップ質問を3つ出力してください。\n"+
-    "マークダウン（**や##など）は使わず、プレーンテキストで出力してください。\n"+
-    "必ずQ1・Q2・Q3の順で、各行の先頭から出力してください。\n"+
-    "Q1：（質問文をここに記載）\n"+
-    "Q2：（質問文をここに記載）\n"+
-    "Q3：（質問文をここに記載）";
+    "【重要】分析の最後に、必ず以下の厳密な形式でコーチング用フォローアップ質問を3つ出力してください。\n"+
+    "・各行を必ずQ1・Q2・Q3で始めること\n"+
+    "・行頭に余分な記号（*、#、-など）を付けないこと\n"+
+    "・以下の形式を一字一句守ること\n"+
+    "Q1：（質問文）\n"+
+    "Q2：（質問文）\n"+
+    "Q3：（質問文）";
 }
 
 async function callAPI(prompt){
-  var res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}],max_tokens:4000})});
+  var res=await fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({messages:[{role:"user",content:prompt}],max_tokens:4000})
+  });
   if(!res.ok){var err=await res.json();throw new Error(err.error||"APIエラー: "+res.status);}
   var data=await res.json();
   return data.content.map(function(c){return c.text||"";}).join("");
@@ -625,19 +647,15 @@ async function runAnalysis(){
     var result=await callAPI(buildPrompt());
     analysisResult=result;
 
-    // ---- フォローアップ質問の抽出（マークダウン記号を除去して認識） ----
-    var fqs=[];
-    result.split("\n").forEach(function(line){
-      var clean=line.replace(/\*\*/g,"").replace(/^\s*[-#]+\s*/,"").trim();
-      var m=clean.match(/^Q([1-3])[：:]\s*(.+)/);
-      if(m)fqs.push({num:m[1],q:m[2].trim()});
-    });
+    // フォローアップ質問を抽出
+    var fqs=extractFqs(result);
 
     document.getElementById("analysisArea").innerHTML=
       '<div style="font-size:13px;color:#333;line-height:1.8;white-space:pre-wrap;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem">'+result+'</div>';
 
     var fqContainer=document.getElementById("fqContainer");
     fqContainer.innerHTML="";
+
     if(fqs.length>0){
       fqs.forEach(function(fq){
         var card=document.createElement("div");card.className="fq-card";
@@ -654,7 +672,37 @@ async function runAnalysis(){
         fqContainer.appendChild(card);
       });
     }else{
-      fqContainer.innerHTML='<p class="note">フォローアップ質問を読み込めませんでした。再試行してください。</p>';
+      // 抽出できなかった場合はAPIを再度呼び出して質問だけ取得
+      fqContainer.innerHTML='<p style="font-size:13px;color:#888">フォローアップ質問を生成中...</p>';
+      try{
+        var fqResult=await callAPI(
+          "以下の分析結果を読んで、コーチング用のフォローアップ質問を3つだけ出力してください。\n"+
+          "必ず以下の形式のみで出力し、他の文章は一切書かないでください。\n"+
+          "Q1：（質問文）\nQ2：（質問文）\nQ3：（質問文）\n\n分析結果：\n"+result
+        );
+        var fqs2=extractFqs(fqResult);
+        fqContainer.innerHTML="";
+        if(fqs2.length>0){
+          fqs2.forEach(function(fq){
+            var card=document.createElement("div");card.className="fq-card";
+            var safeQ=fq.q.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+            card.innerHTML=
+              '<div class="fq-num">質問 '+fq.num+'</div>'+
+              '<div class="fq-question">'+fq.q+'</div>'+
+              '<button class="fq-open-btn" onclick="toggleFq('+fq.num+')"><i class="ti ti-edit"></i> この質問に答える</button>'+
+              '<div class="fq-answer-area" id="fqa-'+fq.num+'">'+
+              '<textarea id="fq-text-'+fq.num+'" placeholder="ここに回答を入力してください..." style="min-height:80px;margin-top:8px"></textarea>'+
+              '<button class="fq-submit" onclick="submitFq('+fq.num+',\''+safeQ+'\')"><i class="ti ti-sparkles"></i> AIに深掘りしてもらう</button>'+
+              '<div id="fq-resp-'+fq.num+'"></div>'+
+              '</div>';
+            fqContainer.appendChild(card);
+          });
+        }else{
+          fqContainer.innerHTML='<p class="note">フォローアップ質問を読み込めませんでした。ページを再読み込みして再試行してください。</p>';
+        }
+      }catch(e2){
+        fqContainer.innerHTML='<p class="note">フォローアップ質問の生成に失敗しました。</p>';
+      }
     }
     document.getElementById("followupSection").style.display="block";
   }catch(e){
