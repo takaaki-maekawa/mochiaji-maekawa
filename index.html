@@ -177,7 +177,6 @@ var APP_PASSWORD = "maekawa2026";
 <div class="tag">リスキリングのための持ち味発見</div>
 <h1>あなたの「持ち味」を活かして<br>新しいスキルへ踏み出そう</h1>
 <p class="lead">リスキリングとは、単に新しい技術を学ぶことではありません。あなたがこれまで培ってきた経験・強み・価値観——つまり「持ち味」を土台にして、次のキャリアに必要なスキルを見極め、自分らしく学び直すことです。</p>
-
 <div class="start-choice">
   <div class="choice-card" onclick="startFresh()">
     <i class="ti ti-plus" style="color:#1D9E75"></i>
@@ -190,19 +189,13 @@ var APP_PASSWORD = "maekawa2026";
     <div class="choice-card-desc">以前保存した .json ファイルを選択して続きから始める場合</div>
   </div>
 </div>
-
 <div class="load-panel" id="loadPanel">
   <div class="load-panel-title"><i class="ti ti-upload"></i> 保存済みファイルを選択してください</div>
   <p style="font-size:12px;color:#555;margin-bottom:10px">以前「データを保存する」でダウンロードした <strong>.json ファイル</strong>を選んでください。</p>
-  <input type="file" id="loadFileInput" accept=".json"
-    style="font-size:13px;margin-bottom:8px;display:block"
-    onchange="loadFromFile(this)">
+  <input type="file" id="loadFileInput" accept=".json" style="font-size:13px;margin-bottom:8px;display:block" onchange="loadFromFile(this)">
   <div id="loadError" style="font-size:12px;color:#dc2626;margin-top:4px;display:none"></div>
-  <button class="btn-secondary" style="font-size:12px;padding:6px 12px;margin-top:8px" onclick="hideLoadPanel()">
-    <i class="ti ti-x"></i> キャンセル
-  </button>
+  <button class="btn-secondary" style="font-size:12px;padding:6px 12px;margin-top:8px" onclick="hideLoadPanel()"><i class="ti ti-x"></i> キャンセル</button>
 </div>
-
 <div class="hero">
 <div class="hero-title">持ち味とは？</div>
 <div class="hero-text">強みも弱みも含めた「あなたらしさ」のこと。長年培ってきた経験や知識、さらには失敗さえも持ち味として再定義します。その持ち味を知ることで、何をリスキリングすべきかが自然と見えてきます。</div>
@@ -351,9 +344,7 @@ function checkPassword(){
   if(input===APP_PASSWORD){
     document.getElementById("pwOverlay").style.display="none";
     document.getElementById("mainContent").style.display="block";
-    renderPeriods();
-    renderSkills();
-    setTimeout(drawLifeline,150);
+    renderPeriods();renderSkills();setTimeout(drawLifeline,150);
   }else{
     errEl.textContent="パスワードが違います。もう一度入力してください。";
     document.getElementById("pwInput").value="";
@@ -363,13 +354,11 @@ function checkPassword(){
 
 // ---- 開始選択 ----
 function startFresh(){goStep(1);}
-
 function showLoadPanel(){
   var panel=document.getElementById("loadPanel");
   panel.style.display="block";
   panel.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
-
 function hideLoadPanel(){
   document.getElementById("loadPanel").style.display="none";
   document.getElementById("loadError").style.display="none";
@@ -384,24 +373,14 @@ function saveToFile(){
     var date=new Date().toLocaleDateString("ja-JP").replace(/\//g,"-");
     filename=name+"_"+date;
   }
-  var data={
-    version:"1.0",
-    savedAt:new Date().toISOString(),
-    filename:filename,
-    profile:{
-      name:getVal("p_name"),age:getVal("p_age"),gender:getVal("p_gender"),
-      pref:getVal("p_pref"),job:getVal("p_job"),
-      sns_x:getVal("sns_x"),sns_fb:getVal("sns_fb"),
-      sns_li:getVal("sns_li"),sns_ig:getVal("sns_ig"),sns_web:getVal("sns_web")
-    },
-    periods:[...periods],
-    skills:{...skillRatings}
-  };
-  var json=JSON.stringify(data,null,2);
-  var blob=new Blob([json],{type:"application/json;charset=utf-8"});
+  var data={version:"1.0",savedAt:new Date().toISOString(),filename:filename,
+    profile:{name:getVal("p_name"),age:getVal("p_age"),gender:getVal("p_gender"),
+      pref:getVal("p_pref"),job:getVal("p_job"),sns_x:getVal("sns_x"),sns_fb:getVal("sns_fb"),
+      sns_li:getVal("sns_li"),sns_ig:getVal("sns_ig"),sns_web:getVal("sns_web")},
+    periods:[...periods],skills:{...skillRatings}};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json;charset=utf-8"});
   var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");
-  a.href=url;a.download=filename+".json";a.click();
+  var a=document.createElement("a");a.href=url;a.download=filename+".json";a.click();
   URL.revokeObjectURL(url);
   var s=document.getElementById("saveStatus");
   s.innerHTML='<span class="saved-badge"><i class="ti ti-check"></i> 「'+filename+'.json」を保存しました</span>';
@@ -410,47 +389,29 @@ function saveToFile(){
 
 // ---- JSONファイルから読み込み ----
 function loadFromFile(input){
-  var errEl=document.getElementById("loadError");
-  errEl.style.display="none";
-  var file=input.files[0];
-  if(!file)return;
-  if(!file.name.endsWith(".json")){
-    errEl.textContent=".json ファイルを選択してください。";
-    errEl.style.display="block";
-    return;
-  }
+  var errEl=document.getElementById("loadError");errEl.style.display="none";
+  var file=input.files[0];if(!file)return;
+  if(!file.name.endsWith(".json")){errEl.textContent=".json ファイルを選択してください。";errEl.style.display="block";return;}
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      var data=JSON.parse(e.target.result);
-      applyData(data);
-      if(data.filename){
-        setTimeout(function(){
-          document.getElementById("saveFilenameInput").value=data.filename;
-        },300);
-      }
-      hideLoadPanel();
-      goStep(1);
-    }catch(err){
-      errEl.textContent="ファイルの読み込みに失敗しました。正しい .json ファイルを選んでください。";
-      errEl.style.display="block";
-    }
+      var data=JSON.parse(e.target.result);applyData(data);
+      if(data.filename){setTimeout(function(){document.getElementById("saveFilenameInput").value=data.filename;},300);}
+      hideLoadPanel();goStep(1);
+    }catch(err){errEl.textContent="ファイルの読み込みに失敗しました。";errEl.style.display="block";}
   };
   reader.readAsText(file);
 }
 
 function applyData(d){
-  if(d.profile){
-    var p=d.profile;
-    setVal("p_name",p.name);setVal("p_age",p.age);setVal("p_gender",p.gender);
-    setVal("p_pref",p.pref);setVal("p_job",p.job);setVal("sns_x",p.sns_x);
-    setVal("sns_fb",p.sns_fb);setVal("sns_li",p.sns_li);setVal("sns_ig",p.sns_ig);setVal("sns_web",p.sns_web);
-  }
+  if(d.profile){var p=d.profile;
+    setVal("p_name",p.name);setVal("p_age",p.age);setVal("p_gender",p.gender);setVal("p_pref",p.pref);
+    setVal("p_job",p.job);setVal("sns_x",p.sns_x);setVal("sns_fb",p.sns_fb);
+    setVal("sns_li",p.sns_li);setVal("sns_ig",p.sns_ig);setVal("sns_web",p.sns_web);}
   if(d.periods)periods=d.periods.slice();
   if(d.skills)skillRatings=Object.assign({},d.skills);
   renderPeriods();renderSkills();
 }
-
 function setVal(id,val){var el=document.getElementById(id);if(el&&val!=null)el.value=val;}
 
 // ---- Periods ----
@@ -459,23 +420,17 @@ function renderPeriods(){
   periods.forEach(function(p,i){
     var sl=(p.score>0?"+":"")+p.score;
     var d=document.createElement("div");d.className="period-card";
-    d.innerHTML=
-      '<div class="period-header">'+
-      '<div class="period-num">'+(i+1)+'</div>'+
-      '<input class="period-title-input" value="'+p.label+'" placeholder="例：学生時代" oninput="periods['+i+'].label=this.value;drawLifeline()">'+
-      '</div>'+
-      '<div class="slider-row">'+
-      '<span class="slider-label">幸福度</span>'+
+    d.innerHTML='<div class="period-header"><div class="period-num">'+(i+1)+'</div>'+
+      '<input class="period-title-input" value="'+p.label+'" placeholder="例：学生時代" oninput="periods['+i+'].label=this.value;drawLifeline()"></div>'+
+      '<div class="slider-row"><span class="slider-label">幸福度</span>'+
       '<input type="range" min="-100" max="100" step="1" value="'+p.score+'" oninput="periods['+i+'].score=parseInt(this.value);this.nextElementSibling.textContent=(parseInt(this.value)>0?\'+\':\'\')+this.value;drawLifeline()">'+
-      '<span class="slider-val">'+sl+'</span>'+
-      '</div>'+
+      '<span class="slider-val">'+sl+'</span></div>'+
       '<textarea placeholder="この時期の主な出来事・やりがいを感じた経験" oninput="periods['+i+'].event=this.value">'+p.event+'</textarea>'+
       (periods.length>2?'<div style="text-align:right;margin-top:4px"><button onclick="removePeriod('+i+')" style="font-size:11px;color:#999;background:none;border:none;cursor:pointer">削除</button></div>':'');
     c.appendChild(d);
   });
   drawLifeline();
 }
-
 function addPeriod(){periods.push({label:"時期"+(periods.length+1),score:0,event:""});renderPeriods();}
 function removePeriod(i){periods.splice(i,1);renderPeriods();}
 
@@ -484,8 +439,7 @@ function drawLifeline(){
   var dpr=window.devicePixelRatio||1,W=canvas.offsetWidth||680,H=200;
   canvas.width=W*dpr;canvas.height=H*dpr;
   var ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  var padL=48,padR=20,padT=20,padB=40;
-  var gW=W-padL-padR,gH=H-padT-padB,mid=padT+gH/2;
+  var padL=48,padR=20,padT=20,padB=40,gW=W-padL-padR,gH=H-padT-padB,mid=padT+gH/2;
   ctx.fillStyle="#f8faf9";ctx.fillRect(0,0,W,H);
   ctx.strokeStyle="rgba(0,0,0,0.08)";ctx.lineWidth=0.5;
   [100,50,0,-50,-100].forEach(function(v){
@@ -527,8 +481,7 @@ function renderSkills(){
       var row=document.createElement("div");row.className="skill-row";
       var stars='';
       for(var n=1;n<=5;n++){stars+='<span class="star" data-val="'+n+'" onclick="setRating(\''+s.name+'\','+n+')">★</span>';}
-      row.innerHTML=
-        '<div class="skill-info"><div class="skill-name">'+s.name+'</div><div class="skill-desc">'+s.desc+'</div></div>'+
+      row.innerHTML='<div class="skill-info"><div class="skill-name">'+s.name+'</div><div class="skill-desc">'+s.desc+'</div></div>'+
         '<div class="stars" id="stars-'+key+'">'+stars+'</div>';
       sec.appendChild(row);
     });
@@ -537,7 +490,6 @@ function renderSkills(){
   SKILLS.forEach(function(s){if(skillRatings[s.name]>0)applyStars(s.name,skillRatings[s.name]);});
   setTimeout(drawSkillChart,100);
 }
-
 function setRating(name,val){skillRatings[name]=val;applyStars(name,val);drawSkillChart();}
 function applyStars(name,val){
   var key=name.replace(/\s/g,"");
@@ -561,28 +513,16 @@ function goStep(n){
   if(n===3)setTimeout(drawSkillChart,100);
   if(n===4)runAnalysis();
 }
-
 function getVal(id){return(document.getElementById(id)?document.getElementById(id).value:"").trim();}
 
 // ---- フォローアップ質問の抽出 ----
-// AIの出力からマークダウン記号を完全除去してQ1〜Q3を確実に抽出する
 function extractFqs(text){
   var fqs=[];
   var lines=text.split("\n");
   for(var i=0;i<lines.length;i++){
-    // あらゆるマークダウン・装飾を除去
-    var clean=lines[i]
-      .replace(/\*\*/g,"")
-      .replace(/\*/g,"")
-      .replace(/^#+\s*/,"")
-      .replace(/^-+\s*/,"")
-      .replace(/^\s+/,"")
-      .trim();
-    // Q1: Q2: Q3: または Q1： Q2： Q3： にマッチ
+    var clean=lines[i].replace(/\*\*/g,"").replace(/\*/g,"").replace(/^#+\s*/,"").replace(/^-+\s*/,"").replace(/^\s+/,"").trim();
     var m=clean.match(/^Q([1-3])\s*[：:]\s*(.+)/);
-    if(m){
-      fqs.push({num:m[1],q:m[2].trim()});
-    }
+    if(m)fqs.push({num:m[1],q:m[2].trim()});
   }
   return fqs;
 }
@@ -626,83 +566,53 @@ function buildPrompt(){
 }
 
 async function callAPI(prompt){
-  var res=await fetch("/api/chat",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({messages:[{role:"user",content:prompt}],max_tokens:4000})
-  });
+  var res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({messages:[{role:"user",content:prompt}],max_tokens:8000})});
   if(!res.ok){var err=await res.json();throw new Error(err.error||"APIエラー: "+res.status);}
   var data=await res.json();
   return data.content.map(function(c){return c.text||"";}).join("");
 }
 
+function renderFqCards(fqs,container){
+  fqs.forEach(function(fq){
+    var card=document.createElement("div");card.className="fq-card";
+    var safeQ=fq.q.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+    card.innerHTML='<div class="fq-num">質問 '+fq.num+'</div><div class="fq-question">'+fq.q+'</div>'+
+      '<button class="fq-open-btn" onclick="toggleFq('+fq.num+')"><i class="ti ti-edit"></i> この質問に答える</button>'+
+      '<div class="fq-answer-area" id="fqa-'+fq.num+'">'+
+      '<textarea id="fq-text-'+fq.num+'" placeholder="ここに回答を入力してください..." style="min-height:80px;margin-top:8px"></textarea>'+
+      '<button class="fq-submit" onclick="submitFq('+fq.num+',\''+safeQ+'\')"><i class="ti ti-sparkles"></i> AIに深掘りしてもらう</button>'+
+      '<div id="fq-resp-'+fq.num+'"></div></div>';
+    container.appendChild(card);
+  });
+}
+
 async function runAnalysis(){
   document.getElementById("analysisArea").innerHTML=
-    '<div class="loading-box">'+
-    '<div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>'+
-    '<p style="font-size:13px;color:#888;margin-top:12px">AIが持ち味を分析しています...</p>'+
-    '</div>';
+    '<div class="loading-box"><div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>'+
+    '<p style="font-size:13px;color:#888;margin-top:12px">AIが持ち味を分析しています...</p></div>';
   document.getElementById("followupSection").style.display="none";
   try{
     var result=await callAPI(buildPrompt());
     analysisResult=result;
-
-    // フォローアップ質問を抽出
     var fqs=extractFqs(result);
-
     document.getElementById("analysisArea").innerHTML=
       '<div style="font-size:13px;color:#333;line-height:1.8;white-space:pre-wrap;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem">'+result+'</div>';
-
-    var fqContainer=document.getElementById("fqContainer");
-    fqContainer.innerHTML="";
-
+    var fqContainer=document.getElementById("fqContainer");fqContainer.innerHTML="";
     if(fqs.length>0){
-      fqs.forEach(function(fq){
-        var card=document.createElement("div");card.className="fq-card";
-        var safeQ=fq.q.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-        card.innerHTML=
-          '<div class="fq-num">質問 '+fq.num+'</div>'+
-          '<div class="fq-question">'+fq.q+'</div>'+
-          '<button class="fq-open-btn" onclick="toggleFq('+fq.num+')"><i class="ti ti-edit"></i> この質問に答える</button>'+
-          '<div class="fq-answer-area" id="fqa-'+fq.num+'">'+
-          '<textarea id="fq-text-'+fq.num+'" placeholder="ここに回答を入力してください..." style="min-height:80px;margin-top:8px"></textarea>'+
-          '<button class="fq-submit" onclick="submitFq('+fq.num+',\''+safeQ+'\')"><i class="ti ti-sparkles"></i> AIに深掘りしてもらう</button>'+
-          '<div id="fq-resp-'+fq.num+'"></div>'+
-          '</div>';
-        fqContainer.appendChild(card);
-      });
+      renderFqCards(fqs,fqContainer);
     }else{
-      // 抽出できなかった場合はAPIを再度呼び出して質問だけ取得
       fqContainer.innerHTML='<p style="font-size:13px;color:#888">フォローアップ質問を生成中...</p>';
       try{
         var fqResult=await callAPI(
           "以下の分析結果を読んで、コーチング用のフォローアップ質問を3つだけ出力してください。\n"+
           "必ず以下の形式のみで出力し、他の文章は一切書かないでください。\n"+
-          "Q1：（質問文）\nQ2：（質問文）\nQ3：（質問文）\n\n分析結果：\n"+result
-        );
+          "Q1：（質問文）\nQ2：（質問文）\nQ3：（質問文）\n\n分析結果：\n"+result);
         var fqs2=extractFqs(fqResult);
         fqContainer.innerHTML="";
-        if(fqs2.length>0){
-          fqs2.forEach(function(fq){
-            var card=document.createElement("div");card.className="fq-card";
-            var safeQ=fq.q.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-            card.innerHTML=
-              '<div class="fq-num">質問 '+fq.num+'</div>'+
-              '<div class="fq-question">'+fq.q+'</div>'+
-              '<button class="fq-open-btn" onclick="toggleFq('+fq.num+')"><i class="ti ti-edit"></i> この質問に答える</button>'+
-              '<div class="fq-answer-area" id="fqa-'+fq.num+'">'+
-              '<textarea id="fq-text-'+fq.num+'" placeholder="ここに回答を入力してください..." style="min-height:80px;margin-top:8px"></textarea>'+
-              '<button class="fq-submit" onclick="submitFq('+fq.num+',\''+safeQ+'\')"><i class="ti ti-sparkles"></i> AIに深掘りしてもらう</button>'+
-              '<div id="fq-resp-'+fq.num+'"></div>'+
-              '</div>';
-            fqContainer.appendChild(card);
-          });
-        }else{
-          fqContainer.innerHTML='<p class="note">フォローアップ質問を読み込めませんでした。ページを再読み込みして再試行してください。</p>';
-        }
-      }catch(e2){
-        fqContainer.innerHTML='<p class="note">フォローアップ質問の生成に失敗しました。</p>';
-      }
+        if(fqs2.length>0){renderFqCards(fqs2,fqContainer);}
+        else{fqContainer.innerHTML='<p class="note">フォローアップ質問を読み込めませんでした。再試行してください。</p>';}
+      }catch(e2){fqContainer.innerHTML='<p class="note">フォローアップ質問の生成に失敗しました。</p>';}
     }
     document.getElementById("followupSection").style.display="block";
   }catch(e){
@@ -712,57 +622,41 @@ async function runAnalysis(){
   }
 }
 
-function toggleFq(num){
-  var area=document.getElementById("fqa-"+num);
-  if(area)area.classList.toggle("open");
-}
+function toggleFq(num){var area=document.getElementById("fqa-"+num);if(area)area.classList.toggle("open");}
 
 async function submitFq(num,question){
-  var answer=document.getElementById("fq-text-"+num).value.trim();
-  if(!answer)return;
+  var answer=document.getElementById("fq-text-"+num).value.trim();if(!answer)return;
   var respEl=document.getElementById("fq-resp-"+num);
   respEl.innerHTML='<div class="loading-box" style="padding:1rem"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>';
   try{
     var result=await callAPI("以下は持ち味発見セッションのフォローアップ質問への回答です。\n質問："+question+"\n回答："+answer+"\nこの回答をもとに、リスキリングの観点から具体的なアドバイスと次のアクションを200〜300字で提案してください。");
     fqAnswers[num]={q:question,a:answer,resp:result};
     respEl.innerHTML='<div class="ai-response">'+result+'</div>';
-  }catch(e){
-    respEl.innerHTML='<div class="error-box">エラー：'+e.message+'</div>';
-  }
+  }catch(e){respEl.innerHTML='<div class="error-box">エラー：'+e.message+'</div>';}
 }
 
-// ---- マークダウン除去 ----
 function stripMarkdown(text){
-  return text
-    .replace(/#{1,6}\s*/g,"").replace(/\*\*(.*?)\*\*/g,"$1").replace(/\*(.*?)\*/g,"$1")
+  return text.replace(/#{1,6}\s*/g,"").replace(/\*\*(.*?)\*\*/g,"$1").replace(/\*(.*?)\*/g,"$1")
     .replace(/^\s*[-*]\s+/gm,"・").replace(/^\s*\d+\.\s+/gm,"")
     .replace(/`{1,3}(.*?)`{1,3}/g,"$1").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1")
     .replace(/\n{3,}/g,"\n\n").trim();
 }
 
-// ---- レポート出力 ----
 function downloadReport(){
-  var name=getVal("p_name")||"ユーザー";
-  var date=new Date().toLocaleDateString("ja-JP");
+  var name=getVal("p_name")||"ユーザー",date=new Date().toLocaleDateString("ja-JP");
   var sep="==================================================";
   var cleanResult=stripMarkdown(analysisResult);
-  var keys=Object.keys(fqAnswers);
-  var fqSection="";
+  var keys=Object.keys(fqAnswers),fqSection="";
   if(keys.length>0){
     fqSection="\n\n"+sep+"\nフォローアップ Q&A\n"+sep+"\n";
-    fqSection+=keys.map(function(k){
-      var f=fqAnswers[k];
-      return "Q："+f.q+"\n\nA："+f.a+"\n\nClaudeより："+stripMarkdown(f.resp);
-    }).join("\n\n------------------------------\n\n");
+    fqSection+=keys.map(function(k){var f=fqAnswers[k];return "Q："+f.q+"\n\nA："+f.a+"\n\nClaudeより："+stripMarkdown(f.resp);}).join("\n\n------------------------------\n\n");
   }
   var content="リスキリングのための持ち味発見レポート\n氏名："+name+"\n作成日："+date+"\n\n"+sep+"\n持ち味分析結果\n"+sep+"\n\n"+cleanResult+fqSection;
   var blob=new Blob(["\uFEFF"+content],{type:"text/plain;charset=utf-8"});
   var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");a.href=url;a.download="持ち味発見レポート_"+name+".txt";a.click();
-  URL.revokeObjectURL(url);
+  var a=document.createElement("a");a.href=url;a.download="持ち味発見レポート_"+name+".txt";a.click();URL.revokeObjectURL(url);
 }
 
-// ---- スキルチャート描画 ----
 function drawSkillChart(){
   var canvas=document.getElementById("skillChart");if(!canvas)return;
   var dpr=window.devicePixelRatio||1,W=canvas.offsetWidth||680,H=320;
@@ -787,14 +681,9 @@ function drawSkillChart(){
   });
   var cats=[{name:"前に踏み出す力",color:"#1D9E75"},{name:"考え抜く力",color:"#534AB7"},{name:"チームで働く力",color:"#BA7517"}];
   var lx=padL,ly=H-8;
-  cats.forEach(function(c){
-    ctx.fillStyle=c.color;ctx.fillRect(lx,ly-8,10,8);
-    ctx.fillStyle="#555";ctx.font="9px sans-serif";ctx.textAlign="left";ctx.fillText(c.name,lx+13,ly);
-    lx+=ctx.measureText(c.name).width+30;
-  });
+  cats.forEach(function(c){ctx.fillStyle=c.color;ctx.fillRect(lx,ly-8,10,8);ctx.fillStyle="#555";ctx.font="9px sans-serif";ctx.textAlign="left";ctx.fillText(c.name,lx+13,ly);lx+=ctx.measureText(c.name).width+30;});
 }
 
-// ---- スキルテキスト出力 ----
 function downloadSkillText(){
   var name=getVal("p_name")||"ユーザー",date=new Date().toLocaleDateString("ja-JP");
   var sep="==================================================";
@@ -806,39 +695,17 @@ function downloadSkillText(){
     text+=" "+s.name+"："+stars+" "+r+"/5\n";
   });
   var blob=new Blob(["\uFEFF"+text],{type:"text/plain;charset=utf-8"});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");a.href=url;a.download="社会人基礎力_"+name+".txt";a.click();
-  URL.revokeObjectURL(url);
+  var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="社会人基礎力_"+name+".txt";a.click();URL.revokeObjectURL(url);
 }
-
-// ---- スキルPNG出力 ----
-function downloadSkillPng(){
-  var name=getVal("p_name")||"ユーザー";
-  var canvas=document.getElementById("skillChart");if(!canvas)return;
-  var a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="社会人基礎力_"+name+".png";a.click();
-}
-
-// ---- ライフラインPNG出力 ----
-function downloadLifelinePng(){
-  var name=getVal("p_name")||"ユーザー";
-  var canvas=document.getElementById("lifeline");if(!canvas)return;
-  var a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="ライフライン_"+name+".png";a.click();
-}
-
-// ---- ライフラインテキスト出力 ----
+function downloadSkillPng(){var name=getVal("p_name")||"ユーザー";var canvas=document.getElementById("skillChart");if(!canvas)return;var a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="社会人基礎力_"+name+".png";a.click();}
+function downloadLifelinePng(){var name=getVal("p_name")||"ユーザー";var canvas=document.getElementById("lifeline");if(!canvas)return;var a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="ライフライン_"+name+".png";a.click();}
 function downloadLifeline(){
   var name=getVal("p_name")||"ユーザー",date=new Date().toLocaleDateString("ja-JP");
   var sep="==================================================";
   var text="ライフラインチャート\n氏名："+name+"\n出力日："+date+"\n\n"+sep+"\n\n";
-  periods.forEach(function(p,i){
-    text+="時期"+(i+1)+"「"+p.label+"」：幸福度"+(p.score>0?"+":"")+p.score+"\n";
-    if(p.event)text+="出来事："+p.event+"\n";
-    text+="\n";
-  });
+  periods.forEach(function(p,i){text+="時期"+(i+1)+"「"+p.label+"」：幸福度"+(p.score>0?"+":"")+p.score+"\n"+(p.event?"出来事："+p.event+"\n":"")+"\n";});
   var blob=new Blob(["\uFEFF"+text],{type:"text/plain;charset=utf-8"});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");a.href=url;a.download="ライフライン_"+name+".txt";a.click();
-  URL.revokeObjectURL(url);
+  var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="ライフライン_"+name+".txt";a.click();URL.revokeObjectURL(url);
 }
 </script>
 </body>
